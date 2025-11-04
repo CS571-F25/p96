@@ -2,7 +2,7 @@ import React from "react";
 import EventCard from "../components/EventCard";
 import { EVENTS } from "../data/events";
 
-// Group by date for a simple calendar look
+// Group by date
 const byDate = EVENTS.reduce((acc, e) => {
   acc[e.date] = acc[e.date] || [];
   acc[e.date].push(e);

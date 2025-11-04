@@ -3,16 +3,12 @@ import VolunteerNeedCard from "../components/VolunteerNeedCard";
 import { VOLUNTEER_NEEDS } from "../data/volunteerNeeds";
 
 export default function Volunteer() {
-  // Build unique committee list from current needs
   const committees = useMemo(() => {
     const set = new Set(VOLUNTEER_NEEDS.map(n => n.committee));
     return Array.from(set).sort();
   }, []);
-
-  // Selected filter
   const [selected, setSelected] = useState("All");
 
-  // Apply filter
   const filtered = useMemo(() => {
     if (selected === "All") return VOLUNTEER_NEEDS;
     return VOLUNTEER_NEEDS.filter(n => n.committee === selected);
@@ -25,44 +21,33 @@ export default function Volunteer() {
         Sign up for open roles (sample placeholders below). Use the quick filter to jump to a committee.
       </p>
 
-      {/* Quick filter buttons */}
       <div className="vol-filter-bar card p-2 mb-3">
         <div className="d-flex flex-wrap gap-2 align-items-center">
           <span className="me-2 fw-semibold">Filter:</span>
 
-          <button
-            type="button"
+          <button type="button"
             className={`btn btn-sm ${selected === "All" ? "btn-primary" : "btn-light"}`}
             onClick={() => setSelected("All")}
-            aria-pressed={selected === "All"}
-          >
-            All
-          </button>
+            aria-pressed={selected === "All"}>All</button>
 
           {committees.map((c) => (
-            <button
-              key={c}
-              type="button"
+            <button key={c} type="button"
               className={`btn btn-sm ${selected === c ? "btn-primary" : "btn-light"}`}
               onClick={() => setSelected(c)}
               aria-pressed={selected === c}
-              title={`Show ${c} needs`}
-            >
+              title={`Show ${c} needs`}>
               {c}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Results */}
       {filtered.length === 0 && (
         <div className="alert alert-info">
           No open needs for <strong>{selected}</strong> right now — try another filter.
         </div>
       )}
-      {filtered.map((n) => (
-        <VolunteerNeedCard key={n.id} n={n} />
-      ))}
+      {filtered.map((n) => <VolunteerNeedCard key={n.id} n={n} />)}
     </div>
   );
 }

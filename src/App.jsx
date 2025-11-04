@@ -1,48 +1,49 @@
 import React from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
+
 import NavBar from "./components/NavBar";
 
-// Pages
 import Home from "./pages/Home";
-import Calendar from "./pages/Calendar";
+import CalendarPage from "./pages/Calendar";
 import Volunteer from "./pages/Volunteer";
 import GetInvolved from "./pages/GetInvolved";
 import CommitteesIndex from "./pages/CommitteesIndex";
-import CommitteeInfo from "./pages/CommitteeInfo";
-import CommitteeMembers from "./pages/CommitteeMembers";
-import CommitteeContact from "./pages/CommitteeContact";
+
+import CommitteeLayout from "./pages/CommitteeLayout";
+import Info from "./pages/committee/Info";
+import Members from "./pages/committee/Members";
+import Contact from "./pages/committee/Contact";
+import Gameday from "./pages/committee/Gameday";
+import Traditions from "./pages/committee/Traditions";
 
 export default function App() {
   return (
-    <HashRouter>
+    <Router>
       <NavBar />
       <main className="app-main">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/volunteer" element={<Volunteer />} />
           <Route path="/get-involved" element={<GetInvolved />} />
 
-          {/* All Committees landing */}
           <Route path="/committees" element={<CommitteesIndex />} />
 
-          {/* Per-committee subpages */}
-          <Route path="/committees/:slug/info" element={<CommitteeInfo />} />
-          <Route path="/committees/:slug/members" element={<CommitteeMembers />} />
-          <Route path="/committees/:slug/contact" element={<CommitteeContact />} />
+          {/* Nested committee routes */}
+          <Route path="/committees/:slug" element={<CommitteeLayout />}>
+            <Route path="info" element={<Info />} />
+            <Route path="members" element={<Members />} />
+            <Route path="contact" element={<Contact />} />
+            {/* Sports-only extra tabs (safe to visit for any) */}
+            <Route path="gameday" element={<Gameday />} />
+            <Route path="traditions" element={<Traditions />} />
+            <Route index element={<Info />} />
+          </Route>
 
           {/* Fallback */}
-          <Route
-            path="*"
-            element={
-              <div className="container py-4">
-                <h1>Not Found</h1>
-                <p>That page doesn’t exist yet.</p>
-              </div>
-            }
-          />
+          <Route path="*" element={<Home />} />
         </Routes>
       </main>
-    </HashRouter>
+    </Router>
   );
 }

@@ -2,10 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 
-// Your theme CSS (includes navbar/dropdown styles, page styles, etc.)
+// Libraries first
+import "bootstrap/dist/css/bootstrap.min.css";
+// Your theme last (overrides Bootstrap)
 import "./theme.css";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  // No StrictMode to avoid double-effects if you don’t want them
-  <App />
-);
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);

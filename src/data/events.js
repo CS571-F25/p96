@@ -1,4 +1,3 @@
-// Lightweight sample calendar data (games + meetings)
 export const EVENTS = [
     {
       id: "evt-1",

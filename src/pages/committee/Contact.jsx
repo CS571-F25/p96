@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { COMMITTEES } from "../data/committees";
+import { COMMITTEES } from "../../data/committees";
 
 export default function CommitteeContact() {
   const { slug } = useParams();
@@ -16,16 +16,8 @@ export default function CommitteeContact() {
   }
 
   return (
-    <div className="container py-4">
-      <nav aria-label="breadcrumb" className="mb-2">
-        <ol className="breadcrumb">
-          <li className="breadcrumb-item"><Link to="/committees">Committees</Link></li>
-          <li className="breadcrumb-item"><Link to={`/committees/${slug}/info`}>{c.name}</Link></li>
-          <li className="breadcrumb-item active" aria-current="page">Contact</li>
-        </ol>
-      </nav>
-
-      <h1>{c.name} — Contact</h1>
+    <div className="container py-2">
+      <h1 className="h3">{c.name} — Contact</h1>
       <p className="text-muted">Socials & quick contact (placeholder form).</p>
 
       <div className="card p-3 mb-3">
