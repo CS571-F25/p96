@@ -1,11 +1,9 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { COMMITTEES } from "../data/committees";
 import Avatar from "../components/Avatar";
 
 export default function CommitteesIndex() {
-  const navigate = useNavigate();
-
   return (
     <div className="page-committees container py-4">
       <section className="committees-hero text-center mb-3">
@@ -15,23 +13,17 @@ export default function CommitteesIndex() {
         </p>
       </section>
 
+      {/* One-column stacked list — same markup/classes as Home */}
       <section className="committees-grid">
         {COMMITTEES.map((c) => (
-          <article
-            key={c.slug}
-            className="committee-card"
-            role="button"
-            tabIndex={0}
-            onClick={() => navigate(`/committees/${c.slug}/info`)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                navigate(`/committees/${c.slug}/info`);
-              }
-            }}
-            aria-label={`${c.name} — open info`}
-          >
-            {/* Top row */}
+          <article key={c.slug} className="committee-card">
+            {/* Make the whole card link to Info (buttons still clickable) */}
+            <Link
+              to={`/committees/${c.slug}/info`}
+              className="card-link-overlay"
+              aria-label={`Open ${c.name} info`}
+            />
+
             <div className="card-top">
               <Avatar
                 src={c.logo}
@@ -45,56 +37,25 @@ export default function CommitteesIndex() {
               </div>
             </div>
 
-            {/* Growable body so actions can pin bottom */}
-            <div className="card-body">
-              {c.blurb && <p className="blurb">{c.blurb}</p>}
-            </div>
+            {c.blurb && <p className="blurb">{c.blurb}</p>}
 
-            {/* Bottom actions – aligned across all cards */}
             <div className="card-actions">
-              {/* stop card click when pressing buttons/links */}
-              <Link
-                to={`/committees/${c.slug}/info`}
-                className="btn btn-light"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Info
-              </Link>
+              <Link to={`/committees/${c.slug}/info`} className="btn btn-light">Info</Link>
 
+              {/* Sports-only extra tabs */}
               {c.isSport && (
                 <>
-                  <Link
-                    to={`/committees/${c.slug}/gameday`}
-                    className="btn btn-light"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <Link to={`/committees/${c.slug}/gameday`} className="btn btn-light">
                     Gameday
                   </Link>
-                  <Link
-                    to={`/committees/${c.slug}/traditions`}
-                    className="btn btn-light"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <Link to={`/committees/${c.slug}/traditions`} className="btn btn-light">
                     Traditions
                   </Link>
                 </>
               )}
 
-              <Link
-                to={`/committees/${c.slug}/members`}
-                className="btn btn-light"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Members
-              </Link>
-
-              <Link
-                to={`/committees/${c.slug}/contact`}
-                className="btn btn-primary"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Contact
-              </Link>
+              <Link to={`/committees/${c.slug}/members`} className="btn btn-light">Members</Link>
+              <Link to={`/committees/${c.slug}/contact`} className="btn btn-primary">Contact</Link>
             </div>
           </article>
         ))}

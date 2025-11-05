@@ -9,26 +9,32 @@ export default function CommitteeContact() {
   if (!c) {
     return (
       <div className="container py-4">
-        <h1>Committee Not Found</h1>
-        <Link to="/committees" className="btn btn-primary mt-2">Back to All Committees</Link>
+        <div className="section"><h1>Committee Not Found</h1>
+        <Link to="/committees" className="btn btn-primary mt-2">Back to All Committees</Link></div>
       </div>
     );
   }
 
   return (
-    <div className="container py-2">
-      <h1 className="h3">{c.name} — Contact</h1>
-      <p className="text-muted">Socials & quick contact (placeholder form).</p>
+    <div className="container py-4">
+      <nav className="breadcrumb-uw mb-2">
+        <Link to="/committees">Committees</Link> <span className="crumb-sep">›</span>
+        <Link to={`/committees/${slug}/info`}>{c.name}</Link> <span className="crumb-sep">›</span>
+        <span>Contact</span>
+      </nav>
 
-      <div className="card p-3 mb-3">
-        <div className="d-flex flex-wrap gap-2">
+      <h1 className="mb-2">{c.name} — Contact</h1>
+      <p className="row-meta">Socials & quick contact (placeholder form).</p>
+
+      <div className="section mb-3">
+        <div className="row-actions">
           <a className="btn btn-light" href="#" onClick={(e)=>{e.preventDefault(); alert("Placeholder IG");}}>Instagram</a>
           <a className="btn btn-light" href="#" onClick={(e)=>{e.preventDefault(); alert("Placeholder X/Twitter");}}>X (Twitter)</a>
           <a className="btn btn-light" href="#" onClick={(e)=>{e.preventDefault(); alert("Placeholder Email");}}>Email</a>
         </div>
       </div>
 
-      <div className="card p-3">
+      <div className="section">
         <form onSubmit={(e)=>{e.preventDefault(); alert("Message sent (placeholder)");}}>
           <div className="mb-3">
             <label className="form-label">Your Name</label>

@@ -4,9 +4,10 @@ import { useOutletContext } from "react-router-dom";
 export default function Gameday() {
   const { committee } = useOutletContext();
   return (
-    <section className="card p-3">
+    <section className="section">
       <h2 className="h4 mb-2">Gameday Guide — {committee.name}</h2>
       <p className="mb-2">Everything you need to know for game operations (timelines, chants, signs, props, roles).</p>
+      <div className="divider"></div>
       <ul className="mb-0">
         <li>Call times & meet locations</li>
         <li>Pre-game setup checklist</li>

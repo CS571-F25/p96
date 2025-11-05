@@ -4,5 +4,7 @@ export const VOLUNTEER_NEEDS = [
     { id: "need-2", title: "Madhouse – Minnesota Volleyball Game", date: "2025-11-20", time: "6:00 PM",
       committee: "Madhouse (Volleyball)", location: "UW Field House West Entrance", capacity: 6, signedUp: 6 },
     { id: "need-3", title: "Marketing – Game Recap Reels", date: "2025-11-22", time: "8:30 PM",
-      committee: "Marketing", location: "Kohl Center Media Corner", capacity: 3, signedUp: 1 }
+      committee: "Marketing", location: "Kohl Center Media Corner", capacity: 3, signedUp: 1 },
+    { id: "need-3", title: "Basketball – Campbell Game", date: "2025-11-26", time: "6:30 PM",
+        committee: "Basketball", location: "Kohl Center Media Corner", capacity: 3, signedUp: 1 }
   ];

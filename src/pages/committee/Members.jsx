@@ -12,33 +12,36 @@ const SAMPLE_MEMBERS = [
 export default function CommitteeMembers() {
   const { slug } = useParams();
   const c = COMMITTEES.find(x => x.slug === slug);
-
   if (!c) {
     return (
       <div className="container py-4">
-        <h1>Committee Not Found</h1>
-        <Link to="/committees" className="btn btn-primary mt-2">Back to All Committees</Link>
+        <div className="section"><h1>Committee Not Found</h1>
+        <Link to="/committees" className="btn btn-primary mt-2">Back</Link></div>
       </div>
     );
   }
 
   return (
-    <div className="container py-2">
-      <h1 className="h3">{c.name} — Members</h1>
-      <div className="table-responsive">
-        <table className="table mb-0">
-          <thead><tr><th>Name</th><th>Role</th></tr></thead>
-          <tbody>
-            {SAMPLE_MEMBERS.map((m) => (
-              <tr key={m.name}><td>{m.name}</td><td>{m.role}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="container py-4">
+      <nav className="breadcrumb-uw mb-2">
+        <Link to="/committees">Committees</Link> <span className="crumb-sep">›</span>
+        <Link to={`/committees/${slug}/info`}>{c.name}</Link> <span className="crumb-sep">›</span>
+        <span>Members</span>
+      </nav>
 
-      <div className="d-flex gap-2 mt-3">
-        <Link to={`/committees/${slug}/info`} className="btn btn-light">Info</Link>
-        <Link to={`/committees/${slug}/contact`} className="btn btn-light">Contact</Link>
+      <h1 className="mb-2">{c.name} — Members</h1>
+
+      <div className="section">
+        <div className="list">
+          {SAMPLE_MEMBERS.map((m) => (
+            <div className="row" key={m.name}>
+              <div>
+                <strong>{m.name}</strong>
+                <div className="row-meta">{m.role}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,71 +1,45 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import EventCard from "../components/EventCard";
-import Avatar from "../components/Avatar";
-import { EVENTS } from "../data/events";
-import { COMMITTEES } from "../data/committees";
+import InstagramSection from "../components/InstagramSection";
 
 export default function Home() {
-  const featured = EVENTS.slice(0, 2);
-
   return (
-    <div className="container py-4">
-      {/* Hero */}
-      <section className="mb-4">
-        <div className="committees-hero text-center">
-          <h1>Welcome to AreaRED</h1>
-          <p className="lead mb-0">
-            Keep the student section loud, proud, and organized. Explore committees, events, and ways to help.
-          </p>
+    <main className="container app-main">
+      {/* ======= HERO / WELCOME ======= */}
+      <section className="section text-center" style={{ paddingTop: "1rem" }}>
+        <h1>Welcome to AreaRED</h1>
+        <p className="text-muted" style={{ maxWidth: "650px", margin: "0 auto" }}>
+          Keep the student section loud, proud, and organized. Explore committees, events, and ways to help.
+        </p>
+      </section>
+
+      {/* ======= UPCOMING HIGHLIGHTS ======= */}
+      <section className="section">
+        <div className="section-head">
+          <h2 className="section-title">Upcoming Highlights</h2>
+          <a href="/calendar" className="btn btn-light btn-sm">
+            View full calendar
+          </a>
+        </div>
+
+        <div className="card mb-3 p-3">
+          <h5 className="mb-1">Football vs. Minnesota</h5>
+          <div className="text-muted small mb-1">
+            Game • 2025-11-15 @ 2:30 PM • Camp Randall
+          </div>
+          <p className="mb-0">Stripe-out in the student section.</p>
+        </div>
+
+        <div className="card p-3">
+          <h5 className="mb-1">AreaRED General Meeting</h5>
+          <div className="text-muted small mb-1">
+            Meeting • 2025-11-18 @ 7:00 PM • Union South
+          </div>
+          <p className="mb-0">New member welcome + committee breakouts.</p>
         </div>
       </section>
 
-      {/* Upcoming */}
-      <section className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h2 className="h4 mb-0">Upcoming Highlights</h2>
-          <Link to="/calendar" className="btn btn-light btn-sm">View full calendar</Link>
-        </div>
-        {featured.map((e) => <EventCard key={e.id} e={e} />)}
-      </section>
-
-      {/* All committees */}
-      <section>
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h2 className="h4 mb-0">Explore by Committee</h2>
-          <Link to="/committees" className="btn btn-light btn-sm">All committees</Link>
-        </div>
-
-        <div className="committees-grid">
-          {COMMITTEES.map((c) => (
-            <article key={c.slug} className="committee-card">
-              {/* Top row */}
-              <div className="card-top">
-                <Avatar
-                  src={c.logo}
-                  alt={`${c.name} logo`}
-                  letter={c.icon || c.name.charAt(0)}
-                  size={40}
-                />
-                <div className="card-titles">
-                  <h3 className="title mb-0">{c.name}</h3>
-                  {c.subtitle && <p className="subtitle mb-0">{c.subtitle}</p>}
-                </div>
-              </div>
-
-              {/* Body (short blurb) */}
-              {c.blurb && <p className="blurb mt-2">{c.blurb}</p>}
-
-              {/* Single action keeps the home page clean */}
-              <div className="card-actions">
-                <Link to={`/committees/${c.slug}/info`} className="btn btn-primary">
-                  View
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    </div>
+      {/* ======= INSTAGRAM SECTION ======= */}
+      <InstagramSection />
+    </main>
   );
 }
