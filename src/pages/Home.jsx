@@ -1,8 +1,36 @@
 // src/pages/Home.jsx
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
 import InstagramSection from "../components/InstagramSection";
 import { EVENTS } from "../data/events";
+
+/* === Shared color map + helpers (match Calendar) === */
+const TAG_COLORS = {
+  // Types
+  Game: "#C5050C",
+  Meeting: "#1E58A5",
+  "Special Event": "#6E7F5E",
+  Volunteer: "#2F8F5B",
+  Other: "#71717A", // slightly cooler gray
+
+  // Sports
+  Football: "#8B1A1A",
+  Basketball: "#F97316",   // bright orange
+  Volleyball: "#B45309",   // deeper amber
+  Hockey: "#1E58A5",
+  Soccer: "#0EA5E9",       // sky blue
+  Wrestling: "#7A3B8F",
+  "Track & Field": "#3F7F7F",
+  "Cross Country": "#3F7F7F",
+  "Swimming & Diving": "#0E7490",
+  Softball: "#A855F7",
+  Baseball: "#2563EB",
+  Golf: "#16A34A",
+  Tennis: "#10B981",
+  Rowing: "#6B7280",
+};
+
+const nice = (s) => s || "Other";
+const getColor = (label) => TAG_COLORS[label] || TAG_COLORS.Other;
 
 /** Convert "2:30 PM" -> {h:14, m:30}; handles "7 PM", "07:00", "", undefined */
 function parseTimeTo24h(timeStr) {
@@ -47,12 +75,15 @@ function eventDateTime(e) {
 export default function Home() {
   const upcoming = useMemo(() => {
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // Attach __dt, keep today/future, sort ascending, take 4
+    // Attach parsed Date, keep future-or-today, sort asc, take first 4
     return EVENTS
       .map((e) => ({ ...e, __dt: eventDateTime(e) }))
-      .filter((e) => e.__dt && e.__dt >= today)
+      .filter(
+        (e) =>
+          e.__dt &&
+          e.__dt >= new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      )
       .sort((a, b) => a.__dt - b.__dt)
       .slice(0, 4);
   }, []);
@@ -67,13 +98,12 @@ export default function Home() {
         </p>
       </section>
 
-      {/* ======= UPCOMING HIGHLIGHTS (auto) ======= */}
+      {/* ======= UPCOMING HIGHLIGHTS (auto + badges) ======= */}
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">Upcoming Highlights</h2>
-          <Link to="/calendar" className="btn btn-light btn-sm">
-            View full calendar
-          </Link>
+          {/* Use hash route so GitHub Pages works */}
+          <a href="/#/calendar" className="btn btn-light btn-sm">View full calendar</a>
         </div>
 
         {upcoming.length === 0 ? (
@@ -82,13 +112,57 @@ export default function Home() {
           </div>
         ) : (
           upcoming.map((e) => (
-            <div key={`${e.id || e.title}-${e.date}-${e.time || "0000"}`} className="card mb-3 p-3">
+            <div
+              key={`${e.id || e.title}-${e.date}-${e.time || "0000"}`}
+              className="card mb-3 p-3 event-card"
+            >
+              {/* Top-right badges just like Calendar */}
+              <div className="event-badges">
+                {e.type && (
+                  <span
+                    className={`badge tag-badge badge-type-${nice(e.type)
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    style={{ background: getColor(nice(e.type)) }}
+                  >
+                    {nice(e.type)}
+                  </span>
+                )}
+                {e.sport && (
+                  <span
+                    className={`badge tag-badge badge-sport-${nice(e.sport)
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    style={{ background: getColor(nice(e.sport)) }}
+                  >
+                    {nice(e.sport)}
+                  </span>
+                )}
+              </div>
+
               <h5 className="mb-1">{e.title}</h5>
-              <div className="text-muted small mb-1">
+              <div className="text-muted small mb-1 event-meta">
                 {(e.type || "Event")} • {e.date}
                 {e.time ? ` @ ${e.time}` : ""} • {e.venue || e.location || "TBA"}
               </div>
-              {e.notes && <p className="mb-0">{e.notes}</p>}
+              {e.notes && <p className="mb-0 event-notes">{e.notes}</p>}
+
+              {/* Keep volunteer CTA consistent with Calendar (optional) */}
+              {nice(e.type) === "Volunteer" && (
+                <div className="vol-cta-row mt-2">
+                  <button
+                    className="btn btn-primary btn-sm vol-btn"
+                    onClick={() => alert("Thanks! (Placeholder—hook to signup later)")}
+                  >
+                    Sign Up to Volunteer
+                  </button>
+                  {e.notes?.match(/(\d+)\/(\d+)/) && (
+                    <span className="cap-badge ok">
+                      {e.notes.match(/(\d+)\/(\d+)/)[0]} filled
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}
