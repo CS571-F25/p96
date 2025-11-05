@@ -4,7 +4,6 @@ import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import CalendarPage from "./pages/Calendar";
-import GetInvolved from "./pages/GetInvolved";
 import CommitteesIndex from "./pages/CommitteesIndex";
 import Links from "./pages/Links";
 
@@ -25,7 +24,6 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/get-involved" element={<GetInvolved />} />
           <Route path="/links" element={<Links />} />
 
           <Route path="/committees" element={<CommitteesIndex />} />

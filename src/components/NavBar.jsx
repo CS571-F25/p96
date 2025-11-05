@@ -44,15 +44,6 @@ export default function NavBar() {
 
           <Nav.Link
             as={NavLink}
-            to="/get-involved"
-            className="navlink-pill"
-            onClick={() => setOpen(false)}
-          >
-            Get Involved
-          </Nav.Link>
-
-          <Nav.Link
-            as={NavLink}
             to="/links"
             className="navlink-pill"
             onClick={() => setOpen(false)}
