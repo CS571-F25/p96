@@ -1,266 +1,195 @@
+// src/pages/Calendar.jsx
 import React, { useMemo, useState } from "react";
 import { EVENTS } from "../data/events";
-import { VOLUNTEER_NEEDS } from "../data/volunteerNeeds";
 
-const COMMITTEE_TO_SPORT = {
-  Football: "Football",
-  "Madhouse (Volleyball)": "Volleyball",
-  "Crease Creatures (Hockey)": "Hockey",
-  Basketball: "Basketball",
-  Marketing: "Other",
-  "Cardinal & White": "Other",
-  "Diverse Fan Engagement": "Other",
-  Membership: "Other",
+const TAG_COLORS = {
+  // Types
+  Game: "#C5050C",
+  Meeting: "#1E58A5",
+  "Special Event": "#6E7F5E",
+  Volunteer: "#2F8F5B",
+  Other: "#656D78",
+
+  // Sports
+  Football: "#8B1A1A",
+  Basketball: "#D2840C",
+  Hockey: "#1E58A5",
+  Volleyball: "#D07A00",
+  Soccer: "#4B5563",
+  Wrestling: "#7A3B8F",
+  "Track & Field": "#3F7F7F",
+  "Cross Country": "#3F7F7F",
+  "Swimming & Diving": "#0E7490",
+  Softball: "#A855F7",
+  Baseball: "#2563EB",
+  Golf: "#16A34A",
+  Tennis: "#10B981",
+  Rowing: "#6B7280",
 };
 
-function mapVolunteerToEvents(needs) {
-  return needs.map((n) => ({
-    id: `need-${n.id || n.title}`,
-    title: n.title,
-    type: "Volunteer",
-    date: n.date,
-    time: n.time,
-    venue: n.location,
-    notes: "",
-    sport: COMMITTEE_TO_SPORT[n.committee] || "Other",
-    isVolunteer: true,
-    capacity: n.capacity,
-    filled: n.signedUp,
-  }));
-}
+const nice = (s) => s || "Other";
+const getColor = (label) => TAG_COLORS[label] || TAG_COLORS.Other;
 
-function sortWithOtherLast(arr) {
-  const list = [...arr].sort((a, b) => a.localeCompare(b));
-  const i = list.indexOf("Other");
-  if (i > -1) {
-    list.splice(i, 1);
-    list.push("Other");
-  }
-  return list;
+function groupByDate(list) {
+  return list.reduce((acc, e) => {
+    (acc[e.date] ||= []).push(e);
+    return acc;
+  }, {});
 }
 
 export default function Calendar() {
-  const unified = useMemo(() => {
-    const volunteerAsEvents = mapVolunteerToEvents(VOLUNTEER_NEEDS || []);
-    return [...EVENTS, ...volunteerAsEvents];
+  // Build filter option sets from data
+  const allTypes = useMemo(() => {
+    const s = new Set(EVENTS.map((e) => nice(e.type)));
+    return Array.from(s).sort((a, b) =>
+      a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)
+    );
   }, []);
 
-  const typeOptions = useMemo(() => {
-    const s = new Set(unified.map((e) => e.type || "Other"));
-    ["Game", "Meeting", "Volunteer", "Other"].forEach((t) => s.add(t));
-    return sortWithOtherLast(Array.from(s));
-  }, [unified]);
-
-  const sportOptions = useMemo(() => {
-    const s = new Set(unified.map((e) => e.sport || "Other"));
-    if (s.size === 0) s.add("Other");
-    return sortWithOtherLast(Array.from(s));
-  }, [unified]);
-
-  const [selectedTypes, setSelectedTypes] = useState(() => new Set(typeOptions));
-  const [selectedSports, setSelectedSports] = useState(() => new Set(sportOptions));
-
-  const toggleType = (t) =>
-    setSelectedTypes((prev) => {
-      const next = new Set(prev);
-      next.has(t) ? next.delete(t) : next.add(t);
-      return next;
-    });
-
-  const toggleSport = (s) =>
-    setSelectedSports((prev) => {
-      const next = new Set(prev);
-      next.has(s) ? next.delete(s) : next.add(s);
-      return next;
-    });
-
-  const selectAllTypes = () => setSelectedTypes(new Set(typeOptions));
-  const selectNoneTypes = () => setSelectedTypes(new Set());
-  const selectAllSports = () => setSelectedSports(new Set(sportOptions));
-  const selectNoneSports = () => setSelectedSports(new Set());
-
-  const filtered = useMemo(
-    () =>
-      unified.filter(
-        (e) => selectedTypes.has(e.type || "Other") && selectedSports.has(e.sport || "Other")
-      ),
-    [unified, selectedTypes, selectedSports]
-  );
-
-  const byDate = useMemo(() => {
-    const map = new Map();
-    for (const e of filtered) {
-      const d = e.date;
-      if (!map.has(d)) map.set(d, []);
-      map.get(d).push(e);
-    }
-    for (const [, arr] of map) {
-      arr.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-    }
-    return Array.from(map.entries()).sort((a, b) => (a[0] || "").localeCompare(b[0] || ""));
-  }, [filtered]);
-
-  const Badge = ({ cls, children }) => (
-    <span className={`badge ${cls}`} style={{ borderRadius: 10, fontWeight: 700 }}>
-      {children}
-    </span>
-  );
-  const TypeBadge = ({ type }) => (
-    <Badge cls={`badge-type badge-type-${(type || "Other").toLowerCase()}`}>{type}</Badge>
-  );
-  const SportBadge = ({ sport }) => (
-    <Badge cls={`badge-sport badge-sport-${(sport || "Other").toLowerCase()}`}>{sport}</Badge>
-  );
-
-  const TypeChip = ({ t }) => {
-    const on = selectedTypes.has(t);
-    return (
-      <button
-        type="button"
-        className={`chip chip-type type-${t.toLowerCase()} ${on ? "chip-on" : ""}`}
-        onClick={() => toggleType(t)}
-        aria-pressed={on}
-      >
-        {t}
-      </button>
+  const allSports = useMemo(() => {
+    const s = new Set(EVENTS.map((e) => nice(e.sport)));
+    s.delete(undefined);
+    return Array.from(s).sort((a, b) =>
+      a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)
     );
+  }, []);
+
+  const [activeTypes, setActiveTypes] = useState(new Set(allTypes));
+  const [activeSports, setActiveSports] = useState(new Set(allSports));
+
+  const toggle = (setFn, curSet, key) => {
+    const ns = new Set(curSet);
+    if (ns.has(key)) ns.delete(key);
+    else ns.add(key);
+    setFn(ns);
   };
-  const SportChip = ({ s }) => {
-    const on = selectedSports.has(s);
-    return (
-      <button
-        type="button"
-        className={`chip chip-sport sport-${s.toLowerCase()} ${on ? "chip-on" : ""}`}
-        onClick={() => toggleSport(s)}
-        aria-pressed={on}
-      >
-        {s}
-      </button>
-    );
-  };
+
+  const setAll = (setFn, keys) => setFn(new Set(keys));
+  const setNone = (setFn) => setFn(new Set());
+
+  // Apply filters
+  const filtered = useMemo(() => {
+    return EVENTS.filter((e) => {
+      const t = nice(e.type);
+      const s = nice(e.sport);
+      const typeOK = activeTypes.size === 0 || activeTypes.has(t);
+      const sportOK = !e.sport || activeSports.size === 0 || activeSports.has(s);
+      return typeOK && sportOK;
+    }).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
+  }, [activeTypes, activeSports]);
+
+  const grouped = useMemo(() => groupByDate(filtered), [filtered]);
+  const dates = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
   return (
     <div className="container py-4">
       <h1>Calendar</h1>
-      <p className="text-muted">Games, meetings, and volunteer shifts. Use filters to focus on what you need.</p>
+      <p className="text-muted">
+        Games, meetings, and volunteer shifts. Use filters to focus on what you need.
+      </p>
 
-      {/* FILTER BAR */}
-      <section className="card p-3 mb-3">
-        <div className="d-flex flex-column gap-2">
-          <div className="d-flex flex-wrap align-items-center gap-2">
-            <span className="filter-label">Type:</span>
-            <button
-              type="button"
-              className={`chip chip-neutral ${
-                selectedTypes.size === typeOptions.length ? "chip-on" : ""
-              }`}
-              onClick={selectAllTypes}
-            >
-              All
-            </button>
-            <button
-              type="button"
-              className={`chip chip-neutral ${selectedTypes.size === 0 ? "chip-on" : ""}`}
-              onClick={selectNoneTypes}
-            >
-              None
-            </button>
-            {typeOptions.map((t) => (
-              <TypeChip key={t} t={t} />
-            ))}
-          </div>
+      {/* Filters */}
+      <div className="card p-3 mb-3">
+        <div className="mb-2 fw-semibold">Type:</div>
+        <div className="d-flex flex-wrap gap-2 mb-3">
+          <button className="btn btn-light btn-sm"
+            onClick={() => setAll(setActiveTypes, allTypes)}>All</button>
+          <button className="btn btn-light btn-sm"
+            onClick={() => setNone(setActiveTypes)}>None</button>
 
-          <div className="d-flex flex-wrap align-items-center gap-2">
-            <span className="filter-label">Sport:</span>
+          {allTypes.map((t) => (
             <button
+              key={t}
               type="button"
-              className={`chip chip-neutral ${
-                selectedSports.size === sportOptions.length ? "chip-on" : ""
-              }`}
-              onClick={selectAllSports}
+              className="filter-chip"
+              data-active={activeTypes.has(t)}
+              style={{
+                background: activeTypes.has(t) ? getColor(t) : "transparent",
+                color: activeTypes.has(t) ? "#fff" : "#222",
+                borderColor: getColor(t),
+              }}
+              onClick={() => toggle(setActiveTypes, activeTypes, t)}
             >
-              All
+              {t}
             </button>
-            <button
-              type="button"
-              className={`chip chip-neutral ${selectedSports.size === 0 ? "chip-on" : ""}`}
-              onClick={selectNoneSports}
-            >
-              None
-            </button>
-            {sportOptions.map((s) => (
-              <SportChip key={s} s={s} />
-            ))}
-          </div>
+          ))}
         </div>
-        <div className="text-end small mt-1">{filtered.length} shown</div>
-      </section>
 
-      {/* RESULTS */}
-      {byDate.map(([date, items]) => (
-        <section key={date} className="mb-2">
-          <h2 className="h5">{date}</h2>
-          {items.map((e) => {
-            const isVol = !!e.isVolunteer;
-            const full = isVol && e.filled >= e.capacity;
+        <div className="mb-2 fw-semibold">Sport:</div>
+        <div className="d-flex flex-wrap gap-2">
+          <button className="btn btn-light btn-sm"
+            onClick={() => setAll(setActiveSports, allSports)}>All</button>
+          <button className="btn btn-light btn-sm"
+            onClick={() => setNone(setActiveSports)}>None</button>
 
-            return (
-              <article key={e.id} className="card p-3 mb-3">
-                <div className="d-flex justify-content-between align-items-start gap-3">
-                  <div className="flex-grow-1">
-                    <h3 className="h5 mb-1">{e.title}</h3>
-                    <div className="text-muted small mb-2">
-                      {(e.type || "Other")} • {e.date} @ {e.time} • {e.venue}
-                    </div>
+          {allSports.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className="filter-chip"
+              data-active={activeSports.has(s)}
+              style={{
+                background: activeSports.has(s) ? getColor(s) : "transparent",
+                color: activeSports.has(s) ? "#fff" : "#222",
+                borderColor: getColor(s),
+              }}
+              onClick={() => toggle(setActiveSports, activeSports, s)}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
 
-{/* Volunteer CTA — refined: button + capacity chip, or single full chip */}
-{isVol && (
-  <div className="vol-cta-row mt-3">
-    {(() => {
-      const ratio = e.capacity ? e.filled / e.capacity : 0;
-      const isFull = ratio >= 1;
+        <div className="text-end small mt-2">{filtered.length} shown</div>
+      </div>
 
-      if (isFull) {
-        return (
-          <span className="cap-badge full" aria-label={`Full — ${e.capacity}/${e.capacity}`}>
-            Full — {e.capacity}/{e.capacity}
-          </span>
-        );
-      }
+      {/* Results */}
+      {dates.map((d) => (
+        <section key={d} className="mb-3">
+          <h5 className="mb-2">{d}</h5>
+          {grouped[d].map((e) => (
+            <article key={e.id} className="card p-3 mb-3 position-relative">
+              {/* Badges top-right: Type then Sport (if any) */}
+              <div className="d-flex flex-column gap-1 position-absolute end-0 me-3 mt-3">
+                <span
+                  className="badge tag-badge"
+                  style={{ background: getColor(nice(e.type)) }}
+                >
+                  {nice(e.type)}
+                </span>
+                {e.sport && (
+                  <span
+                    className="badge tag-badge"
+                    style={{ background: getColor(nice(e.sport)) }}
+                  >
+                    {nice(e.sport)}
+                  </span>
+                )}
+              </div>
 
-      const capText = `${e.filled}/${e.capacity} filled`;
-      const capClass =
-        ratio >= 0.75 ? "warn" : "ok"; // ok=green, warn=amber
+              <h5 className="mb-1">{e.title}</h5>
+              <div className="text-muted small mb-2">
+                {nice(e.type)} • {e.date} {e.time ? `@ ${e.time}` : ""} {e.venue ? `• ${e.venue}` : ""}
+              </div>
 
-      return (
-        <>
-          <button
-            className="btn btn-primary vol-btn"
-            onClick={() => alert("Thanks! (Placeholder — hook to real signup later)")}
-            aria-label={`Sign up to volunteer. ${capText}`}
-          >
-            Volunteer
-          </button>
-          <span className={`cap-badge ${capClass}`} aria-hidden="true">
-            {capText}
-          </span>
-        </>
-      );
-    })()}
-  </div>
-)}
+              {e.notes && <p className="mb-2">{e.notes}</p>}
 
-                    {e.notes && <p className="mb-0 mt-2">{e.notes}</p>}
-                  </div>
-
-                  <div className="d-flex flex-column align-items-end gap-2">
-                    <TypeBadge type={e.type || "Other"} />
-                    <SportBadge sport={e.sport || "Other"} />
-                  </div>
+              {/* Volunteer CTA (if volunteer) */}
+              {nice(e.type) === "Volunteer" && (
+                <div className="d-flex align-items-center gap-2">
+                  <button className="btn btn-primary btn-sm"
+                    onClick={() => alert("Thanks! (Placeholder—hook to signup later)")}>
+                    Sign Up to Volunteer
+                  </button>
+                  {e.notes?.match(/(\d+)\/(\d+)/) && (
+                    <span className="badge text-bg-success">
+                      {e.notes.match(/(\d+)\/(\d+)/)[0]} filled
+                    </span>
+                  )}
                 </div>
-              </article>
-            );
-          })}
+              )}
+            </article>
+          ))}
         </section>
       ))}
     </div>
