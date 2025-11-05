@@ -1,5 +1,6 @@
 // src/pages/Home.jsx
 import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import InstagramSection from "../components/InstagramSection";
 import { EVENTS } from "../data/events";
 
@@ -46,15 +47,14 @@ function eventDateTime(e) {
 export default function Home() {
   const upcoming = useMemo(() => {
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // Map -> attach dt, filter to future-or-today, sort asc, take first 4
-    const withDt = EVENTS
+    // Attach __dt, keep today/future, sort ascending, take 4
+    return EVENTS
       .map((e) => ({ ...e, __dt: eventDateTime(e) }))
-      .filter((e) => e.__dt && e.__dt >= new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+      .filter((e) => e.__dt && e.__dt >= today)
       .sort((a, b) => a.__dt - b.__dt)
       .slice(0, 4);
-
-    return withDt;
   }, []);
 
   return (
@@ -71,7 +71,9 @@ export default function Home() {
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">Upcoming Highlights</h2>
-          <a href="/#/calendar" className="btn btn-light btn-sm">View full calendar</a>
+          <Link to="/calendar" className="btn btn-light btn-sm">
+            View full calendar
+          </Link>
         </div>
 
         {upcoming.length === 0 ? (
