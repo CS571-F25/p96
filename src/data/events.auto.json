@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-213521calendarwiscedu",
-    "title": "Men&#39;s Soccer: UW vs. William Penn",
-    "type": "Game",
-    "sport": "Soccer",
-    "date": "2025-11-06",
-    "time": "8:00 AM",
-    "venue": "McClimon Sports Complex",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215094calendarwiscedu",
     "title": "Men&#39;s Basketball: UW vs. Northern Illinois",
     "type": "Game",
@@ -211,6 +200,17 @@
   {
     "id": "uw-215134calendarwiscedu",
     "title": "Women&#39;s Swimming and Diving: UW vs. Illinois",
+    "type": "Game",
+    "sport": "Swimming",
+    "date": "2025-12-06",
+    "time": "6:30 AM",
+    "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213466calendarwiscedu",
+    "title": "Men&#39;s Swimming and Diving: UW vs. Purdue",
     "type": "Game",
     "sport": "Swimming",
     "date": "2025-12-06",
