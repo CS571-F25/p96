@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-207197calendarwiscedu",
-    "title": "Football: UW vs Washington",
-    "type": "Game",
-    "sport": "Football",
-    "date": "2025-11-07",
-    "time": "6:00 PM",
-    "venue": "Camp Randall Stadium",
-    "notes": "*Note: actual end time may vary.*",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213460calendarwiscedu",
     "title": "Volleyball: UW vs. Indiana",
     "type": "Game",
@@ -215,6 +204,17 @@
     "sport": "Basketball",
     "date": "2025-12-06",
     "time": "7:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215115calendarwiscedu",
+    "title": "Women&#39;s Basketball: UW vs. Michigan State",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2025-12-07",
+    "time": "11:00 AM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
