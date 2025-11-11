@@ -1,18 +1,7 @@
 [
   {
-    "id": "uw-215111calendarwiscedu",
-    "title": "Women&#39;s Basketball: UW vs. UW-Milwaukee",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-11-10",
-    "time": "12:30 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215095calendarwiscedu",
-    "title": "Men&#39;s Basketball: UW vs. Ball State",
+    "title": "Men's Basketball: UW vs. Ball State",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-11-11",
@@ -23,7 +12,7 @@
   },
   {
     "id": "uw-215112calendarwiscedu",
-    "title": "Women&#39;s Basketball: UW vs. Bowling Green",
+    "title": "Women's Basketball: UW vs. Bowling Green",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-11-12",
@@ -34,7 +23,7 @@
   },
   {
     "id": "uw-213497calendarwiscedu",
-    "title": "Men&#39;s Hockey: UW vs. Ohio State",
+    "title": "Men's Hockey: UW vs. Ohio State",
     "type": "Game",
     "sport": "Hockey",
     "date": "2025-11-14",
@@ -56,7 +45,7 @@
   },
   {
     "id": "uw-213498calendarwiscedu",
-    "title": "Men&#39;s Hockey: UW vs. Ohio State",
+    "title": "Men's Hockey: UW vs. Ohio State",
     "type": "Game",
     "sport": "Hockey",
     "date": "2025-11-15",
@@ -67,7 +56,7 @@
   },
   {
     "id": "uw-215113calendarwiscedu",
-    "title": "Women&#39;s Basketball: UW vs. UW-Green Bay",
+    "title": "Women's Basketball: UW vs. UW-Green Bay",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-11-16",
@@ -78,7 +67,7 @@
   },
   {
     "id": "uw-215096calendarwiscedu",
-    "title": "Men&#39;s Basketball: UW vs. Southern Illinois University - Edwardsville",
+    "title": "Men's Basketball: UW vs. Southern Illinois University - Edwardsville",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-11-17",
@@ -100,7 +89,7 @@
   },
   {
     "id": "uw-213484calendarwiscedu",
-    "title": "Women&#39;s Hockey: UW vs. St. Thomas",
+    "title": "Women's Hockey: UW vs. St. Thomas",
     "type": "Game",
     "sport": "Hockey",
     "date": "2025-11-20",
@@ -111,7 +100,7 @@
   },
   {
     "id": "uw-213485calendarwiscedu",
-    "title": "Women&#39;s Hockey: UW vs. St. Thomas",
+    "title": "Women's Hockey: UW vs. St. Thomas",
     "type": "Game",
     "sport": "Hockey",
     "date": "2025-11-21",
@@ -144,7 +133,7 @@
   },
   {
     "id": "uw-215114calendarwiscedu",
-    "title": "Women&#39;s Basketball: UW vs. Detroit Mercy",
+    "title": "Women's Basketball: UW vs. Detroit Mercy",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-11-23",
@@ -155,7 +144,7 @@
   },
   {
     "id": "uw-215097calendarwiscedu",
-    "title": "Men&#39;s Basketball: UW vs. Northwestern",
+    "title": "Men's Basketball: UW vs. Northwestern",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-12-03",
@@ -166,7 +155,7 @@
   },
   {
     "id": "uw-215134calendarwiscedu",
-    "title": "Women&#39;s Swimming and Diving: UW vs. Illinois",
+    "title": "Women's Swimming and Diving: UW vs. Illinois",
     "type": "Game",
     "sport": "Swimming",
     "date": "2025-12-06",
@@ -177,7 +166,7 @@
   },
   {
     "id": "uw-213466calendarwiscedu",
-    "title": "Men&#39;s Swimming and Diving: UW vs. Purdue",
+    "title": "Men's Swimming and Diving: UW vs. Purdue",
     "type": "Game",
     "sport": "Swimming",
     "date": "2025-12-06",
@@ -188,7 +177,7 @@
   },
   {
     "id": "uw-215098calendarwiscedu",
-    "title": "Men&#39;s Basketball: UW vs. Marquette",
+    "title": "Men's Basketball: UW vs. Marquette",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-12-06",
@@ -199,7 +188,7 @@
   },
   {
     "id": "uw-215115calendarwiscedu",
-    "title": "Women&#39;s Basketball: UW vs. Michigan State",
+    "title": "Women's Basketball: UW vs. Michigan State",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-12-07",
@@ -210,12 +199,23 @@
   },
   {
     "id": "uw-215116calendarwiscedu",
-    "title": "Women&#39;s Basketball: UW vs. San Diego",
+    "title": "Women's Basketball: UW vs. San Diego",
     "type": "Game",
     "sport": "Basketball",
     "date": "2025-12-10",
     "time": "5:00 AM",
     "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215128calendarwiscedu",
+    "title": "Wrestling: UW vs. Lock Haven and Utah Valley",
+    "type": "Game",
+    "sport": "Wrestling",
+    "date": "2025-12-18",
+    "time": "11:00 AM",
+    "venue": "Field House",
     "notes": "",
     "source": "UW Athletics"
   }
