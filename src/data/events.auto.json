@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215112calendarwiscedu",
-    "title": "Women's Basketball: UW vs. Bowling Green",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-11-12",
-    "time": "12:30 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213497calendarwiscedu",
     "title": "Men's Hockey: UW vs. Ohio State",
     "type": "Game",
@@ -216,6 +205,17 @@
     "date": "2025-12-20",
     "time": "7:00 AM",
     "venue": "Field House",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215117calendarwiscedu",
+    "title": "Women's Basketball: UW vs. IU Indianapolis",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2025-12-21",
+    "time": "5:00 AM",
+    "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
   }
