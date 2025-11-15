@@ -1,27 +1,5 @@
 [
   {
-    "id": "uw-213497calendarwiscedu",
-    "title": "Men's Hockey: UW vs. Ohio State",
-    "type": "Game",
-    "sport": "Hockey",
-    "date": "2025-11-14",
-    "time": "1:00 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-211030calendarwiscedu",
-    "title": "Beyond the Pitch: Changing Narratives of Professionalism in Men’s Professional Soccer",
-    "type": "Game",
-    "sport": "Soccer",
-    "date": "2025-11-14",
-    "time": "7:00 AM",
-    "venue": "TBA, Memorial Union  (Also offered online)",
-    "notes": "by Bartu Ersen, Department of Sociology. This talk discusses how male professional soccer players in Turkey situate themselves within the neoliberal reorganization of their field. Drawing on interviews, media materials, and internal team practices, it analyzes the move from club-centered loyalty toward individualized self-management. It focuses on the decline of sacrifice and emotional attachment as metrics such as visibility, efficiency, and control over the self gain importance.These changes align with the flexible labor conditions.",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213498calendarwiscedu",
     "title": "Men's Hockey: UW vs. Ohio State",
     "type": "Game",
@@ -215,6 +193,28 @@
     "sport": "Basketball",
     "date": "2025-12-21",
     "time": "5:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215099calendarwiscedu",
+    "title": "Men's Basketball: UW vs. Central Michigan",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2025-12-22",
+    "time": "1:00 PM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215100calendarwiscedu",
+    "title": "Men's Basketball: UW vs. UW-Milwaukee",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2025-12-30",
+    "time": "12:00 PM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
