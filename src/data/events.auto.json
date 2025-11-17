@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215113calendarwiscedu",
-    "title": "Women's Basketball: UW vs. UW-Green Bay",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-11-16",
-    "time": "8:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215096calendarwiscedu",
     "title": "Men's Basketball: UW vs. Southern Illinois University - Edwardsville",
     "type": "Game",
@@ -215,6 +204,17 @@
     "sport": "Basketball",
     "date": "2026-01-03",
     "time": "1:00 PM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215118calendarwiscedu",
+    "title": "Women's Basketball: UW vs. Penn State",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-01-04",
+    "time": "9:00 AM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
