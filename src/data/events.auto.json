@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215096calendarwiscedu",
-    "title": "Men's Basketball: UW vs. Southern Illinois University - Edwardsville",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-11-17",
-    "time": "1:00 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213461calendarwiscedu",
     "title": "Volleyball: UW vs. Purdue",
     "type": "Game",
@@ -29,7 +18,7 @@
     "date": "2025-11-20",
     "time": "1:00 PM",
     "venue": "LaBahn Arena",
-    "notes": "",
+    "notes": "Tickets sold out.",
     "source": "UW Athletics"
   },
   {
@@ -40,7 +29,7 @@
     "date": "2025-11-21",
     "time": "1:00 PM",
     "venue": "LaBahn Arena",
-    "notes": "",
+    "notes": "Tickets sold out.",
     "source": "UW Athletics"
   },
   {
@@ -48,10 +37,10 @@
     "title": "Football: UW vs Illinois",
     "type": "Game",
     "sport": "Football",
-    "date": "2025-11-21",
-    "time": "6:00 PM",
+    "date": "2025-11-22",
+    "time": "12:30 PM",
     "venue": "Camp Randall Stadium",
-    "notes": "*Note: actual end time may vary.*",
+    "notes": "",
     "source": "UW Athletics"
   },
   {
@@ -215,6 +204,17 @@
     "sport": "Basketball",
     "date": "2026-01-04",
     "time": "9:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215102calendarwiscedu",
+    "title": "Men's Basketball: UW vs. UCLA",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-01-06",
+    "time": "2:00 PM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
