@@ -1,38 +1,5 @@
 [
   {
-    "id": "uw-215134calendarwiscedu",
-    "title": "Women's Swimming and Diving: UW vs. Illinois",
-    "type": "Game",
-    "sport": "Swimming",
-    "date": "2025-12-06",
-    "time": "6:30 AM",
-    "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-213466calendarwiscedu",
-    "title": "Men's Swimming and Diving: UW vs. Purdue",
-    "type": "Game",
-    "sport": "Swimming",
-    "date": "2025-12-06",
-    "time": "6:30 AM",
-    "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-215098calendarwiscedu",
-    "title": "Men's Basketball: UW vs. Marquette",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-12-06",
-    "time": "7:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215115calendarwiscedu",
     "title": "Women's Basketball: UW vs. Michigan State",
     "type": "Game",
@@ -215,6 +182,39 @@
     "sport": "Hockey",
     "date": "2026-01-16",
     "time": "1:00 PM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215103calendarwiscedu",
+    "title": "Men's Basketball: UW vs. Rutgers",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-01-17",
+    "time": "7:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215120calendarwiscedu",
+    "title": "Women's Basketball: UW vs. Oregon",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-01-18",
+    "time": "9:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215121calendarwiscedu",
+    "title": "Women's Basketball: UW vs. Nebraska",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-01-21",
+    "time": "12:30 PM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
