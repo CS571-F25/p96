@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215115calendarwiscedu",
-    "title": "Women's Basketball: UW vs. Michigan State",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-12-07",
-    "time": "11:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215116calendarwiscedu",
     "title": "Women's Basketball: UW vs. San Diego",
     "type": "Game",
@@ -215,6 +204,17 @@
     "sport": "Basketball",
     "date": "2026-01-21",
     "time": "12:30 PM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213503calendarwiscedu",
+    "title": "Men's Hockey: UW vs. Penn State",
+    "type": "Game",
+    "sport": "Hockey",
+    "date": "2026-01-23",
+    "time": "1:00 PM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
