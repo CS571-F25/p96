@@ -158,7 +158,8 @@ export default function Home() {
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">Upcoming Highlights</h2>
-          <a href="/#/calendar" className="btn btn-light btn-sm">
+          {/* NOTE: no leading slash so it works on GitHub Pages project sites */}
+          <a href="#/calendar" className="btn btn-light btn-sm">
             View full calendar
           </a>
         </div>
@@ -259,8 +260,10 @@ export default function Home() {
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">Volunteer Shifts</h2>
+          {/* Pre-toggle only-volunteer filter on calendar.
+              Again, NO leading slash so it stays under repo path. */}
           <a
-            href="/#/calendar?onlyVol=1"
+            href="#/calendar?onlyVol=1"
             className="btn btn-light btn-sm"
           >
             See all shifts
@@ -307,7 +310,7 @@ export default function Home() {
                   {e.time ? ` @ ${e.time}` : ""} • {e.venue || e.location || "TBA"}
                 </div>
 
-                {/* No raw notes text here either; keep it all in the dynamic pill */}
+                {/* No raw notes text here either; keep it in the dynamic pill */}
                 <div className="vol-cta-row mt-1">
                   <button
                     type="button"
