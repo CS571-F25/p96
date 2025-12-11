@@ -1295,12 +1295,35 @@ p {
 
 /* Mobile tweak */
 @media (max-width: 768px) {
+  /* Make the whole chat card a bit taller on phones */
   .chat-shell {
-    height: 65vh;
-    max-height: 65vh;
+    height: 75vh;
+    max-height: 75vh;
   }
 
-  .chat-bubble-wrap {
-    max-width: 80%;
+  /* Stack sidebar ABOVE the conversation instead of side-by-side */
+  .chat-body-row {
+    flex-direction: column;
+  }
+
+  /* Sidebar becomes a header list, full width */
+  .chat-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #e1e3e8;
+    height: auto;
+  }
+
+  /* Conversation fills the rest of the card */
+  .chat-main {
+    flex: 1 1 auto;
+  }
+
+  /* Let bubbles be a bit wider on narrow screens */
+  .chat-message {
+    max-width: 90%;
+  }
+
+  .chat-bubble {
+    max-width: 90%;
   }
 }
