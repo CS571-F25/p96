@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import CalendarPage from "./pages/Calendar";
 import CommitteesIndex from "./pages/CommitteesIndex";
 import Links from "./pages/Links";
+import AccountPage from "./pages/AccountPage";
 
 import CommitteeLayout from "./pages/CommitteeLayout";
 import Info from "./pages/committee/Info";
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/links" element={<Links />} />
+            <Route path="/account" element={<AccountPage />} />
 
             <Route path="/committees" element={<CommitteesIndex />} />
             <Route path="/committees/:slug" element={<CommitteeLayout />}>

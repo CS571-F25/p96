@@ -1,83 +1,88 @@
-import React, { useEffect, useState } from "react";
-import { Button, Dropdown } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Dropdown, Spinner } from "react-bootstrap";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthStatus() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const auth = getAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
-    return () => unsub();
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u || null);
+      setLoading(false);
+    });
+    return unsub;
   }, [auth]);
 
-  // Not signed in → simple "Sign In" button
-  if (!user) {
+  const handleSignOut = async () => {
+    await signOut(auth);
+    navigate("/");
+  };
+
+  // While auth is resolving
+  if (loading) {
     return (
-      <Button
-        variant="light"
-        size="sm"
-        className="ms-2"              // NOTE: no position-fixed / sticky classes
-        onClick={() => navigate("/signin")}
-      >
-        Sign In
-      </Button>
+      <div className="auth-row">
+        <Spinner animation="border" size="sm" role="status" />
+      </div>
     );
   }
 
-  // Signed in → little user pill dropdown
-  const label = user.displayName || user.email || "User";
-  const initial = label[0]?.toUpperCase() ?? "?";
+  // Not signed in → simple Sign In button
+  if (!user) {
+    return (
+      <div className="auth-row">
+        <button
+          type="button"
+          className="btn btn-light btn-sm"
+          onClick={() => navigate("/signin")}
+        >
+          Sign In
+        </button>
+      </div>
+    );
+  }
+
+  const photoURL = user.photoURL;
+  const initial =
+    user.displayName?.charAt(0).toUpperCase() ||
+    user.email?.charAt(0).toUpperCase() ||
+    "?";
 
   return (
-    <Dropdown align="end">
-      <Dropdown.Toggle
-        as={Button}
-        variant="light"
-        size="sm"
-        className="d-flex align-items-center gap-2 ms-2"
-      >
-        <span
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: "999px",
-            background: "#fff",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: 700,
-            fontSize: "0.9rem",
-            border: "1px solid rgba(0,0,0,0.1)",
-          }}
+    <div className="auth-row">
+      <Dropdown align="end">
+        <Dropdown.Toggle
+          id="user-menu"
+          variant="light"
+          className="user-avatar-toggle"
         >
-          {initial}
-        </span>
-        <span
-          className="text-truncate"
-          style={{ maxWidth: 140 }}
-        >
-          {label}
-        </span>
-      </Dropdown.Toggle>
+          {photoURL ? (
+            <img
+              src={photoURL}
+              alt="Profile"
+              className="user-avatar-img"
+            />
+          ) : (
+            <div className="user-avatar-fallback" aria-hidden="true">
+              {initial}
+            </div>
+          )}
+          {/* For screen readers only; Bootstrap has visually-hidden */}
+          <span className="visually-hidden">Open account menu</span>
+        </Dropdown.Toggle>
 
-      <Dropdown.Menu>
-        {/* Chat only visible when signed in */}
-        <Dropdown.Item onClick={() => navigate("/chat")}>
-          Open Chat
-        </Dropdown.Item>
-        <Dropdown.Divider />
-        <Dropdown.Item
-          onClick={async () => {
-            await signOut(auth);
-            navigate("/");
-          }}
-        >
-          Sign out
-        </Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
+        <Dropdown.Menu>
+          <Dropdown.Item onClick={() => navigate("/account")}>
+            Account
+          </Dropdown.Item>
+          <Dropdown.Divider />
+          <Dropdown.Item onClick={handleSignOut}>Sign out</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    </div>
   );
 }

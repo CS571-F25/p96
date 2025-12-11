@@ -1,175 +1,225 @@
-// src/pages/ChatPage.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
+  Container,
+  Card,
+  Form,
+  Button,
+  Spinner,
+  Alert,
+  Nav,
+} from "react-bootstrap";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import {
   addDoc,
-  serverTimestamp,
+  collection,
+  doc,
+  getDoc,
+  limit,
   onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
 } from "firebase/firestore";
-import { db } from "../firebase"; // make sure this exists
+import { db } from "../firebase";
 
 const ROOMS = [
-  { id: "general", name: "General" },
-  { id: "madhouse", name: "Madhouse (Volleyball)" },
-  { id: "football", name: "Football" },
-  { id: "crease", name: "Crease Creatures (Hockey)" },
+  { id: "general", label: "General" },
+  { id: "committees", label: "Committees" },
+  { id: "twentyone", label: "21+ Lounge", restricted21: true },
 ];
 
-export default function ChatPage({ user }) {
-  const [activeRoom, setActiveRoom] = useState("general");
+function getAge(birthdayStr) {
+  if (!birthdayStr) return null;
+  const today = new Date();
+  const b = new Date(birthdayStr);
+  let age = today.getFullYear() - b.getFullYear();
+  const m = today.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
+  return age;
+}
+
+export default function ChatPage() {
+  const [authUser, setAuthUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  const [roomId, setRoomId] = useState("general");
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
 
-  const roomLabel = useMemo(
-    () => ROOMS.find((r) => r.id === activeRoom)?.name || "General",
-    [activeRoom]
-  );
-
-  // Subscribe to messages for this room
+  // Watch auth
   useEffect(() => {
-    if (!activeRoom) return;
+    const auth = getAuth();
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      setAuthUser(u || null);
+      setAuthLoading(false);
 
-    const qRef = query(
-      collection(db, "messages"),
-      where("roomId", "==", activeRoom),
-      orderBy("createdAt", "asc"),
-      limit(200)
-    );
+      if (!u) {
+        setProfile(null);
+        setProfileLoading(false);
+        return;
+      }
 
-    const unsub = onSnapshot(qRef, (snap) => {
-      const list = [];
-      snap.forEach((doc) => list.push({ id: doc.id, ...doc.data() }));
-      setMessages(list);
+      setProfileLoading(true);
+      try {
+        const snap = await getDoc(doc(db, "users", u.uid));
+        setProfile(snap.exists() ? snap.data() : null);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setProfileLoading(false);
+      }
     });
 
-    return () => unsub();
-  }, [activeRoom]);
+    return unsub;
+  }, []);
+
+  // Subscribe to messages for current room
+  useEffect(() => {
+    const q = query(
+      collection(db, "rooms", roomId, "messages"),
+      orderBy("createdAt", "asc"),
+      limit(100)
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setMessages(data);
+    });
+
+    return unsub;
+  }, [roomId]);
+
+  const displayName = useMemo(() => {
+    if (!authUser) return "";
+    if (profile?.firstName || profile?.lastName) {
+      return `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+    }
+    return authUser.displayName || authUser.email || "Member";
+  }, [authUser, profile]);
+
+  const age = useMemo(() => getAge(profile?.birthday), [profile]);
+  const roomConfig = ROOMS.find((r) => r.id === roomId);
+  const roomIsRestricted = roomConfig?.restricted21;
+  const canAccessRoom =
+    !roomIsRestricted || (age !== null && age >= 21);
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    if (!user) {
-      alert("You must be signed in to send messages.");
-      return;
-    }
+    if (!authUser || !text.trim() || !canAccessRoom) return;
 
     setSending(true);
     try {
-      await addDoc(collection(db, "messages"), {
-        roomId: activeRoom,
+      await addDoc(collection(db, "rooms", roomId, "messages"), {
         text: text.trim(),
-        userId: user.uid,
-        userEmail: user.email || "",
-        displayName: user.displayName || user.email || "Anonymous",
+        uid: authUser.uid,
+        displayName,
         createdAt: serverTimestamp(),
       });
       setText("");
     } catch (err) {
       console.error(err);
-      alert("Failed to send message. Check console for details.");
     } finally {
       setSending(false);
     }
   };
 
+  if (authLoading) {
+    return (
+      <Container className="py-4">
+        <Spinner animation="border" />
+      </Container>
+    );
+  }
+
+  if (!authUser) {
+    return (
+      <Container className="py-4">
+        <Alert variant="warning">
+          You need to sign in to use chat.
+        </Alert>
+      </Container>
+    );
+  }
+
   return (
-    <div className="container py-3">
-      <h1>Chat</h1>
-      <p className="text-muted">
-        Real-time rooms for AreaRED committees, powered by Firebase.
-      </p>
-
-      <div className="row">
-        {/* Rooms sidebar */}
-        <aside className="col-12 col-md-3 mb-3">
-          <div className="card p-2">
-            <h2 className="h5 mb-2">Rooms</h2>
-            <div className="list-group">
-              {ROOMS.map((room) => (
-                <button
-                  key={room.id}
-                  type="button"
-                  className={
-                    "list-group-item list-group-item-action" +
-                    (room.id === activeRoom ? " active" : "")
-                  }
-                  onClick={() => setActiveRoom(room.id)}
-                >
-                  {room.name}
-                </button>
-              ))}
-            </div>
+    <Container className="py-4">
+      <Card className="p-3">
+        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h2 className="mb-0">Chat</h2>
+          <div className="text-muted small">
+            Signed in as <strong>{displayName}</strong>
           </div>
-        </aside>
+        </div>
 
-        {/* Chat main */}
-        <section className="col-12 col-md-9">
-          <div className="card p-3 d-flex flex-column" style={{ minHeight: "420px" }}>
-            <h2 className="h5 mb-2">{roomLabel}</h2>
-            <div
-              className="flex-grow-1 mb-3"
-              style={{
-                borderRadius: "10px",
-                border: "1px solid #e5e5e5",
-                padding: "8px 10px",
-                overflowY: "auto",
-                maxHeight: "420px",
-                background: "#fafafa",
-              }}
-            >
-              {messages.length === 0 ? (
-                <div className="text-muted small">No messages yet. Say hi!</div>
-              ) : (
-                <ul className="list-unstyled mb-0">
-                  {messages.map((m) => (
-                    <li key={m.id} className="mb-2">
-                      <div className="d-flex justify-content-between">
-                        <strong>{m.displayName || m.userEmail || "User"}</strong>
-                        <span className="text-muted small">
-                          {m.createdAt?.toDate
-                            ? m.createdAt.toDate().toLocaleString()
-                            : "…"}
-                        </span>
-                      </div>
-                      <div>{m.text}</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        <Nav
+          variant="pills"
+          className="mb-3 flex-wrap"
+          activeKey={roomId}
+          onSelect={(k) => k && setRoomId(k)}
+        >
+          {ROOMS.map((r) => (
+            <Nav.Item key={r.id}>
+              <Nav.Link eventKey={r.id}>
+                {r.label}
+                {r.restricted21 && " (21+)"}
+              </Nav.Link>
+            </Nav.Item>
+          ))}
+        </Nav>
 
-            {/* Input form */}
-            <form onSubmit={handleSend}>
-              <label htmlFor="chat-input" className="form-label">
-                Message
-              </label>
-              <div className="d-flex gap-2">
-                <input
-                  id="chat-input"
-                  className="form-control"
-                  type="text"
-                  placeholder={user ? "Type a message…" : "Sign in to chat"}
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  disabled={!user || sending}
-                />
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={!user || sending || !text.trim()}
-                >
-                  {sending ? "Sending…" : "Send"}
-                </button>
+        {roomIsRestricted && (profileLoading || age === null) && (
+          <Alert variant="info" className="mb-3">
+            To access the 21+ lounge, set your birthday on the Account page.
+          </Alert>
+        )}
+
+        {roomIsRestricted && age !== null && age < 21 && (
+          <Alert variant="danger" className="mb-3">
+            This room is restricted to members 21 and older.
+          </Alert>
+        )}
+
+        <div className="chat-messages mb-3" style={{ maxHeight: 400, overflowY: "auto" }}>
+          {messages.length === 0 ? (
+            <p className="text-muted">No messages yet. Say hi!</p>
+          ) : (
+            messages.map((m) => (
+              <div key={m.id} className="mb-2">
+                <div className="fw-semibold small">
+                  {m.displayName || "Member"}
+                </div>
+                <div>{m.text}</div>
               </div>
-            </form>
-          </div>
-        </section>
-      </div>
-    </div>
+            ))
+          )}
+        </div>
+
+        <Form onSubmit={handleSend}>
+          <Form.Group controlId="chatText" className="d-flex gap-2">
+            <Form.Control
+              type="text"
+              placeholder={
+                canAccessRoom
+                  ? "Type a message…"
+                  : "You do not have access to this room."
+              }
+              value={text}
+              disabled={!canAccessRoom || sending}
+              onChange={(e) => setText(e.target.value)}
+            />
+            <Button
+              type="submit"
+              disabled={!canAccessRoom || !text.trim() || sending}
+            >
+              Send
+            </Button>
+          </Form.Group>
+        </Form>
+      </Card>
+    </Container>
   );
 }
