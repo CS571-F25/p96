@@ -1244,20 +1244,46 @@ p {
   margin-left: auto;
 }
 
-/* Attachments inside bubble */
-.chat-attachment {
+/* =========================
+   Chat image / file bubbles
+========================= */
+
+/* Container for image messages */
+.chat-image-bubble {
   margin-top: 6px;
+  /* hard cap + responsive cap so it never goes huge */
+  max-width: min(260px, 70vw);
+  border-radius: 14px;
+  overflow: hidden;
 }
 
-/* Image attachment */
+.chat-message-me .chat-image-bubble {
+  align-self: flex-end;
+}
+
+/* Any image we use inside chat bubbles */
+.chat-image-bubble img,
+.chat-image,
 .chat-attachment-image {
-  max-width: 260px;
-  max-height: 260px;
   width: 100%;
   height: auto;
-  border-radius: 12px;
   display: block;
+  border-radius: 14px;
   object-fit: cover;
+}
+
+/* Wrapper div around an attachment */
+.chat-attachment,
+.chat-file-bubble {
+  margin-top: 4px;
+}
+
+/* File link attachment */
+.chat-attachment-file a,
+.chat-file-bubble a {
+  font-size: 0.9rem;
+  text-decoration: underline;
+  word-break: break-all;
 }
 
 /* File link attachment */

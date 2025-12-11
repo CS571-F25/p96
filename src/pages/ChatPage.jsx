@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Container,
   Row,
@@ -81,11 +81,26 @@ export default function ChatPage() {
 
   const messagesContainerRef = useRef(null);
   const fileInputRef = useRef(null);
-  // Helper to scroll to bottom of the messages container
-const scrollToBottom = useCallback(() => {
-    const el = messagesContainerRef.current;
-    if (!el) return;
-    el.scrollTop = el.scrollHeight;
+
+  // ===== Simple viewport detection for mobile vs desktop =====
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+  const [showRoomListOnMobile, setShowRoomListOnMobile] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // On desktop, always show both columns
+      if (!mobile) {
+        setShowRoomListOnMobile(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // ===== Auth + 21+ profile =====
@@ -180,11 +195,13 @@ const scrollToBottom = useCallback(() => {
     }
   }, [activeRoomId]);
 
-// Always scroll to bottom when messages change or room changes
-useEffect(() => {
+  // Always scroll to bottom of current room
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
     if (!messages.length) return;
-    scrollToBottom();
-  }, [messages.length, activeRoomId, scrollToBottom]);
+    el.scrollTop = el.scrollHeight;
+  }, [messages.length, activeRoomId, showRoomListOnMobile]);
 
   // ===== Attachment handling =====
   const handleAttachmentClick = () => {
@@ -292,362 +309,424 @@ useEffect(() => {
     );
   }
 
+  const showSidebar =
+    !isMobile || (isMobile && showRoomListOnMobile);
+  const showConversation =
+    !isMobile || (isMobile && !showRoomListOnMobile);
+
   return (
     <Container className="py-4">
-      {/* Card has fixed height and flex column */}
       <Card
         className="chat-shell"
         style={{
           display: "flex",
           flexDirection: "column",
-          height: "72vh",
-          maxHeight: "72vh",
+          height: isMobile ? "auto" : "72vh",
+          maxHeight: isMobile ? "none" : "72vh",
           overflow: "hidden",
         }}
       >
-        {/* Row fills card height but doesn't grow it */}
         <Row
           className="g-0 chat-body-row"
-          style={{ flex: 1, minHeight: 0, overflow: "hidden" }}
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflow: "hidden",
+            flexDirection: isMobile ? "column" : "row",
+          }}
         >
           {/* LEFT: thread list */}
-          <Col
-            md={4}
-            lg={3}
-            className="chat-sidebar"
-            style={{ display: "flex", flexDirection: "column", minHeight: 0 }}
-          >
-            <div className="chat-sidebar-header">
-              <h5 className="mb-0">Messages</h5>
-              <span className="chat-sidebar-sub">
-                {user.displayName || user.email}
-              </span>
-            </div>
-
-            <ListGroup
-              variant="flush"
-              className="chat-thread-list"
-              style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
-            >
-              {ROOMS.map((room) => {
-                const disabled = room.requires21 && !is21Plus;
-                const isActive = activeRoomId === room.id;
-                const preview = lastMessages[room.id];
-
-                let previewText = preview?.text || room.description;
-                if (previewText.length > 60) {
-                  previewText = previewText.slice(0, 57) + "…";
-                }
-
-                const initials = room.name
-                  .split(" ")
-                  .map((w) => w[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase();
-
-                const lastTime = preview?.createdAt?.toDate?.();
-                const timeStr = lastTime
-                  ? lastTime.toLocaleTimeString([], {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })
-                  : "";
-
-                return (
-                  <ListGroup.Item
-                    key={room.id}
-                    action={!disabled}
-                    active={isActive}
-                    onClick={() => !disabled && setActiveRoomId(room.id)}
-                    className={
-                      "chat-thread-item" +
-                      (disabled ? " chat-thread-disabled" : "") +
-                      (isActive ? " chat-thread-active" : "")
-                    }
-                  >
-                    <div className="chat-thread-avatar">
-                      <div className="chat-thread-avatar-pill">{initials}</div>
-                    </div>
-                    <div className="chat-thread-main">
-                      <div className="chat-thread-top">
-                        <span className="chat-thread-name">{room.name}</span>
-                        {timeStr && (
-                          <span className="chat-thread-time">{timeStr}</span>
-                        )}
-                      </div>
-                      <div className="chat-thread-bottom">
-                        <span className="chat-thread-preview">
-                          {previewText}
-                        </span>
-                        {room.requires21 && (
-                          <span className="chat-thread-badge">21+</span>
-                        )}
-                      </div>
-                      {disabled && (
-                        <div className="chat-thread-locked">
-                          Add your birthday on the Account page to unlock.
-                        </div>
-                      )}
-                    </div>
-                  </ListGroup.Item>
-                );
-              })}
-            </ListGroup>
-          </Col>
-
-          {/* RIGHT: conversation view */}
-          <Col
-            md={8}
-            lg={9}
-            className="chat-main"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 0,
-              maxHeight: "100%",
-            }}
-          >
-            <div className="chat-main-header">
-              <div>
-                <h4 className="mb-0">{activeRoom?.name}</h4>
-                <div className="chat-main-sub">
-                  {activeRoom?.description}
-                </div>
-              </div>
-              {activeRoom?.requires21 && (
-                <Badge bg={canUseActiveRoom ? "warning" : "secondary"}>
-                  21+ room
-                </Badge>
-              )}
-            </div>
-
-            {!canUseActiveRoom && (
-              <Alert variant="secondary" className="mb-0 chat-access-alert">
-                This room is only available to members who are 21 or older. Add
-                your birthday on the <strong>Account</strong> page if you
-                should have access.
-              </Alert>
-            )}
-
-            {error && (
-              <Alert variant="danger" className="mb-0 chat-error-alert">
-                {error}
-              </Alert>
-            )}
-
-            {/* Messages viewport (scrolls internally) */}
-            <div
-              className="chat-messages"
-              ref={messagesContainerRef}
+          {showSidebar && (
+            <Col
+              md={4}
+              lg={3}
+              className="chat-sidebar"
               style={{
-                flex: 1,
+                display: "flex",
+                flexDirection: "column",
                 minHeight: 0,
-                maxHeight: "100%",
-                overflowY: "auto",
+                borderRight: showConversation && !isMobile ? "1px solid #e1e3e8" : "none",
+                borderBottom: isMobile ? "1px solid #e1e3e8" : "none",
               }}
             >
-              {messagesLoading ? (
-                <div className="chat-messages-empty">
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  Loading messages…
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="chat-messages-empty">
-                  No messages yet. Start the conversation!
-                </div>
-              ) : (
-                messages.map((msg) => {
-                  const isMe = msg.uid === user.uid;
-                  const created =
-                    msg.createdAt?.toDate?.() || msg.createdAt || null;
-                  const timeStr = created
-                    ? created.toLocaleTimeString([], {
+              <div className="chat-sidebar-header">
+                <h5 className="mb-0">Messages</h5>
+                <span className="chat-sidebar-sub">
+                  {user.displayName || user.email}
+                </span>
+              </div>
+
+              <ListGroup
+                variant="flush"
+                className="chat-thread-list"
+                style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
+              >
+                {ROOMS.map((room) => {
+                  const disabled = room.requires21 && !is21Plus;
+                  const isActive = activeRoomId === room.id;
+                  const preview = lastMessages[room.id];
+
+                  let previewText = preview?.text || room.description;
+                  if (previewText.length > 60) {
+                    previewText = previewText.slice(0, 57) + "…";
+                  }
+
+                  const initials = room.name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+
+                  const lastTime = preview?.createdAt?.toDate?.();
+                  const timeStr = lastTime
+                    ? lastTime.toLocaleTimeString([], {
                         hour: "numeric",
                         minute: "2-digit",
                       })
                     : "";
 
-                  // Name & avatar logic:
-                  const nameToShow = isMe
-                    ? user.displayName || user.email || "AreaRED Member"
-                    : msg.displayName || "AreaRED Member";
-
-                  const avatarURL = isMe
-                    ? user.photoURL || null
-                    : msg.photoURL || null;
-
-                  const initials =
-                    (nameToShow && nameToShow.trim()[0]?.toUpperCase()) ||
-                    msg.uid?.[0]?.toUpperCase() ||
-                    "?";
-
-                  const attachment = msg.attachment || null;
-                  const isImage =
-                    attachment?.type?.startsWith("image/") ?? false;
-
                   return (
-                    <div
-                      key={msg.id}
+                    <ListGroup.Item
+                      key={room.id}
+                      action={!disabled}
+                      active={isActive}
+                      onClick={() => {
+                        if (disabled) return;
+                        setActiveRoomId(room.id);
+                        if (isMobile) {
+                          setShowRoomListOnMobile(false);
+                        }
+                      }}
                       className={
-                        "chat-message" + (isMe ? " chat-message-me" : "")
+                        "chat-thread-item" +
+                        (disabled ? " chat-thread-disabled" : "") +
+                        (isActive ? " chat-thread-active" : "")
                       }
                     >
-                      <div className="chat-avatar">
-                        {avatarURL ? (
-                          <img src={avatarURL} alt={`${nameToShow} avatar`} />
-                        ) : (
-                          <div className="chat-avatar-fallback">
-                            {initials}
-                          </div>
-                        )}
+                      <div className="chat-thread-avatar">
+                        <div className="chat-thread-avatar-pill">
+                          {initials}
+                        </div>
                       </div>
-
-                      <div className="chat-bubble-wrap">
-                        <div className="chat-meta">
-                          <span className="chat-name">{nameToShow}</span>
+                      <div className="chat-thread-main">
+                        <div className="chat-thread-top">
+                          <span className="chat-thread-name">
+                            {room.name}
+                          </span>
                           {timeStr && (
-                            <span className="chat-time">{timeStr}</span>
+                            <span className="chat-thread-time">
+                              {timeStr}
+                            </span>
                           )}
                         </div>
-
-                        {/* TEXT BUBBLE (only if text exists) */}
-                        {msg.text && msg.text.trim() && (
-                          <div className="chat-bubble">{msg.text}</div>
-                        )}
-
-                        {/* IMAGE ATTACHMENT */}
-                        {attachment && isImage && (
-                          <div className="chat-image-bubble">
-                            <a
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-<img
-  src={attachment.url}
-  alt={attachment.name || "Attachment"}
-  className="chat-attachment-image"
-  onLoad={scrollToBottom}
-/>
-                            </a>
-                          </div>
-                        )}
-
-                        {/* NON-IMAGE FILE ATTACHMENT */}
-                        {attachment && !isImage && (
-                          <div className="chat-file-bubble">
-                            <a
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              📎 {attachment.name || "Download attachment"}
-                            </a>
+                        <div className="chat-thread-bottom">
+                          <span className="chat-thread-preview">
+                            {previewText}
+                          </span>
+                          {room.requires21 && (
+                            <span className="chat-thread-badge">21+</span>
+                          )}
+                        </div>
+                        {disabled && (
+                          <div className="chat-thread-locked">
+                            Add your birthday on the Account page to unlock.
                           </div>
                         )}
                       </div>
-                    </div>
+                    </ListGroup.Item>
                   );
-                })
-              )}
-            </div>
+                })}
+              </ListGroup>
+            </Col>
+          )}
 
-            {/* Optional small local preview of image attachment */}
-            {attachmentFile && (
+          {/* RIGHT: conversation view */}
+          {showConversation && (
+            <Col
+              md={8}
+              lg={9}
+              className="chat-main"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: 0,
+                maxHeight: "100%",
+              }}
+            >
+              <div className="chat-main-header">
+                <div className="d-flex align-items-center">
+                  {isMobile && (
+                    <Button
+                      type="button"
+                      variant="light"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => setShowRoomListOnMobile(true)}
+                    >
+                      ←
+                    </Button>
+                  )}
+                  <div>
+                    <h4 className="mb-0">{activeRoom?.name}</h4>
+                    <div className="chat-main-sub">
+                      {activeRoom?.description}
+                    </div>
+                  </div>
+                </div>
+                {activeRoom?.requires21 && (
+                  <Badge bg={canUseActiveRoom ? "warning" : "secondary"}>
+                    21+ room
+                  </Badge>
+                )}
+              </div>
+
+              {!canUseActiveRoom && (
+                <Alert
+                  variant="secondary"
+                  className="mb-0 chat-access-alert"
+                >
+                  This room is only available to members who are 21 or
+                  older. Add your birthday on the <strong>Account</strong>{" "}
+                  page if you should have access.
+                </Alert>
+              )}
+
+              {error && (
+                <Alert variant="danger" className="mb-0 chat-error-alert">
+                  {error}
+                </Alert>
+              )}
+
+              {/* Messages viewport (scrolls internally) */}
               <div
+                className="chat-messages"
+                ref={messagesContainerRef}
                 style={{
-                  padding: "4px 20px 0",
-                  borderTop: "1px solid #e5e7eb",
-                  background: "#f9fafb",
-                  fontSize: "0.8rem",
+                  flex: 1,
+                  minHeight: 0,
+                  maxHeight: "100%",
+                  overflowY: "auto",
                 }}
               >
-                <span className="me-2">Attached:</span>
-                <strong>{attachmentFile.name}</strong>
-                {attachmentPreviewUrl && (
-                  <div style={{ marginTop: 4 }}>
-                    <img
-                      src={attachmentPreviewUrl}
-                      alt="Attachment preview"
+                {messagesLoading ? (
+                  <div className="chat-messages-empty">
+                    <Spinner
+                      animation="border"
+                      size="sm"
+                      className="me-2"
+                    />
+                    Loading messages…
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="chat-messages-empty">
+                    No messages yet. Start the conversation!
+                  </div>
+                ) : (
+                  messages.map((msg) => {
+                    const isMe = msg.uid === user.uid;
+                    const created =
+                      msg.createdAt?.toDate?.() || msg.createdAt || null;
+                    const timeStr = created
+                      ? created.toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })
+                      : "";
+
+                    const nameToShow = isMe
+                      ? user.displayName || user.email || "AreaRED Member"
+                      : msg.displayName || "AreaRED Member";
+
+                    const avatarURL = isMe
+                      ? user.photoURL || null
+                      : msg.photoURL || null;
+
+                    const initials =
+                      (nameToShow && nameToShow.trim()[0]?.toUpperCase()) ||
+                      msg.uid?.[0]?.toUpperCase() ||
+                      "?";
+
+                    const attachment = msg.attachment || null;
+                    const isImage =
+                      attachment?.type?.startsWith("image/") ?? false;
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={
+                          "chat-message" + (isMe ? " chat-message-me" : "")
+                        }
+                      >
+                        <div className="chat-avatar">
+                          {avatarURL ? (
+                            <img
+                              src={avatarURL}
+                              alt={`${nameToShow} avatar`}
+                            />
+                          ) : (
+                            <div className="chat-avatar-fallback">
+                              {initials}
+                            </div>
+                          )}
+                        </div>
+                        <div className="chat-bubble-wrap">
+                          <div className="chat-meta">
+                            <span className="chat-name">
+                              {nameToShow}
+                            </span>
+                            {timeStr && (
+                              <span className="chat-time">
+                                {timeStr}
+                              </span>
+                            )}
+                          </div>
+                          {/* Text + attachments */}
+                          {msg.text && msg.text.trim() && (
+                            <div className="chat-bubble">{msg.text}</div>
+                          )}
+
+                          {attachment && isImage && (
+                            <div className="chat-image-bubble">
+                              <a
+                                href={attachment.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <img
+                                  src={attachment.url}
+                                  alt={attachment.name || "Attachment"}
+                                  className="chat-image"
+                                  onLoad={() => {
+                                    // keep scrolled to bottom when images finish loading
+                                    const el = messagesContainerRef.current;
+                                    if (!el) return;
+                                    el.scrollTop = el.scrollHeight;
+                                  }}
+                                />
+                              </a>
+                            </div>
+                          )}
+
+                          {attachment && !isImage && (
+                            <div className="chat-file-bubble">
+                              <a
+                                href={attachment.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {attachment.name || "Download attachment"}
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Optional small local preview of image attachment */}
+              {attachmentFile && (
+                <div
+                  style={{
+                    padding: "4px 20px 0",
+                    borderTop: "1px solid #e5e7eb",
+                    background: "#f9fafb",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  <span className="me-2">Attached:</span>
+                  <strong>{attachmentFile.name}</strong>
+                  {attachmentPreviewUrl && (
+                    <div style={{ marginTop: 4 }}>
+                      <img
+                        src={attachmentPreviewUrl}
+                        alt="Attachment preview"
+                        style={{
+                          maxWidth: "160px",
+                          maxHeight: "100px",
+                          borderRadius: 8,
+                          display: "block",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Input bar pinned to bottom of card */}
+              <div
+                className="chat-input-bar"
+                style={{
+                  flexShrink: 0,
+                  borderTop: "1px solid #e1e3e8",
+                  padding: "10px 20px",
+                  background: "#fff",
+                }}
+              >
+                {canUseActiveRoom ? (
+                  <Form
+                    onSubmit={handleSend}
+                    className="w-100 d-flex gap-2"
+                  >
+                    {/* Hidden file input */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="d-none"
+                      onChange={handleAttachmentChange}
+                    />
+                    {/* Attachment button */}
+                    <Button
+                      type="button"
+                      variant="light"
+                      onClick={handleAttachmentClick}
+                      disabled={sending || messagesLoading}
                       style={{
-                        maxWidth: "160px",
-                        maxHeight: "100px",
-                        borderRadius: 8,
-                        display: "block",
+                        borderRadius: "999px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        paddingInline: "0.6rem",
+                      }}
+                    >
+                      📎
+                    </Button>
+                    {/* Message input */}
+                    <Form.Control
+                      as="textarea"
+                      rows={1}
+                      placeholder="Send a message…"
+                      value={newMessage}
+                      onChange={(e) =>
+                        setNewMessage(e.target.value)
+                      }
+                      disabled={sending || messagesLoading}
+                      aria-label="Chat message"
+                      style={{
+                        resize: "none",
                       }}
                     />
+                    <Button
+                      type="submit"
+                      disabled={
+                        sending ||
+                        messagesLoading ||
+                        (!newMessage.trim() && !attachmentFile)
+                      }
+                    >
+                      {sending ? "Sending…" : "Send"}
+                    </Button>
+                  </Form>
+                ) : (
+                  <div className="text-muted small">
+                    You don’t currently have access to this room.
                   </div>
                 )}
               </div>
-            )}
-
-            {/* Input bar pinned to bottom of card */}
-            <div
-              className="chat-input-bar"
-              style={{
-                flexShrink: 0,
-                borderTop: "1px solid #e1e3e8",
-                padding: "10px 20px",
-                background: "#fff",
-              }}
-            >
-              {canUseActiveRoom ? (
-                <Form onSubmit={handleSend} className="w-100 d-flex gap-2">
-                  {/* Hidden file input */}
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="d-none"
-                    onChange={handleAttachmentChange}
-                  />
-                  {/* Attachment button */}
-                  <Button
-                    type="button"
-                    variant="light"
-                    onClick={handleAttachmentClick}
-                    disabled={sending || messagesLoading}
-                    style={{
-                      borderRadius: "999px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      paddingInline: "0.6rem",
-                    }}
-                  >
-                    📎
-                  </Button>
-                  {/* Message input */}
-                  <Form.Control
-                    as="textarea"
-                    rows={1}
-                    placeholder="Send a message…"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    disabled={sending || messagesLoading}
-                    aria-label="Chat message"
-                    style={{
-                      resize: "none",
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={
-                      sending ||
-                      messagesLoading ||
-                      (!newMessage.trim() && !attachmentFile)
-                    }
-                  >
-                    {sending ? "Sending…" : "Send"}
-                  </Button>
-                </Form>
-              ) : (
-                <div className="text-muted small">
-                  You don’t currently have access to this room.
-                </div>
-              )}
-            </div>
-          </Col>
+            </Col>
+          )}
         </Row>
       </Card>
     </Container>
