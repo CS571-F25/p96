@@ -1,224 +1,447 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Container,
+  Row,
+  Col,
   Card,
-  Form,
+  ListGroup,
   Button,
+  Form,
+  Badge,
   Spinner,
   Alert,
-  Nav,
 } from "react-bootstrap";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
-  addDoc,
   collection,
+  query,
+  orderBy,
+  onSnapshot,
+  addDoc,
   doc,
   getDoc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
   serverTimestamp,
+  limit,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
 const ROOMS = [
-  { id: "general", label: "General" },
-  { id: "committees", label: "Committees" },
-  { id: "twentyone", label: "21+ Lounge", restricted21: true },
+  {
+    id: "general",
+    name: "General",
+    description: "Everyday AreaRED chat, questions, and announcements.",
+    requires21: false,
+  },
+  {
+    id: "committees",
+    name: "Committees",
+    description: "Committee coordination, planning, and logistics.",
+    requires21: false,
+  },
+  {
+    id: "twentyone", // match your original Firestore path
+    name: "21+ Lounge",
+    description: "Late-night & social chat (21+ only).",
+    requires21: true,
+  },
 ];
 
-function getAge(birthdayStr) {
+function computeAge(birthdayStr) {
   if (!birthdayStr) return null;
-  const today = new Date();
   const b = new Date(birthdayStr);
+  if (Number.isNaN(b.getTime())) return null;
+
+  const today = new Date();
   let age = today.getFullYear() - b.getFullYear();
   const m = today.getMonth() - b.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
+  if (m < 0 || (m === 0 && today.getDate() < b.getDate())) {
+    age--;
+  }
   return age;
 }
 
 export default function ChatPage() {
-  const [authUser, setAuthUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const [profile, setProfile] = useState(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [is21Plus, setIs21Plus] = useState(false);
 
-  const [roomId, setRoomId] = useState("general");
+  const [activeRoomId, setActiveRoomId] = useState("general");
+
   const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
+  const [messagesLoading, setMessagesLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
-  // Watch auth
+  const messagesContainerRef = useRef(null);
+
+  // ===== Auth + profile (for 21+ access) =====
   useEffect(() => {
     const auth = getAuth();
     const unsub = onAuthStateChanged(auth, async (u) => {
-      setAuthUser(u || null);
+      setUser(u || null);
       setAuthLoading(false);
 
       if (!u) {
-        setProfile(null);
-        setProfileLoading(false);
+        setIs21Plus(false);
+        setProfileLoaded(true);
         return;
       }
 
-      setProfileLoading(true);
       try {
-        const snap = await getDoc(doc(db, "users", u.uid));
-        setProfile(snap.exists() ? snap.data() : null);
+        const userRef = doc(db, "users", u.uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          const age = computeAge(data.birthday);
+          setIs21Plus(age !== null && age >= 21);
+        } else {
+          setIs21Plus(false);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Error loading profile for chat:", err);
+        setIs21Plus(false);
       } finally {
-        setProfileLoading(false);
+        setProfileLoaded(true);
       }
     });
 
     return unsub;
   }, []);
 
-  // Subscribe to messages for current room
+  // If you’re on a 21+ room and lose access, bump back to general
   useEffect(() => {
-    const q = query(
-      collection(db, "rooms", roomId, "messages"),
-      orderBy("createdAt", "asc"),
-      limit(100)
+    const room = ROOMS.find((r) => r.id === activeRoomId);
+    if (room?.requires21 && !is21Plus) {
+      setActiveRoomId("general");
+    }
+  }, [is21Plus, activeRoomId]);
+
+  const activeRoom = useMemo(
+    () => ROOMS.find((r) => r.id === activeRoomId),
+    [activeRoomId]
+  );
+
+  const canUseActiveRoom =
+    !activeRoom?.requires21 || (activeRoom?.requires21 && is21Plus);
+
+  // ===== Subscribe to messages for CURRENT room (old behavior) =====
+  useEffect(() => {
+    setMessagesLoading(true);
+    setError("");
+
+    // rooms/{roomId}/messages, ordered by createdAt
+    const msgsRef = collection(db, "rooms", activeRoomId, "messages");
+    const q = query(msgsRef, orderBy("createdAt", "asc"), limit(100));
+
+    const unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        const list = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+        setMessages(list);
+        setMessagesLoading(false);
+      },
+      (err) => {
+        console.error(
+          "[Chat] Firestore onSnapshot error – check collection name & security rules:",
+          err
+        );
+        setError("Could not load messages.");
+        setMessages([]);
+        setMessagesLoading(false);
+      }
     );
 
-    const unsub = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setMessages(data);
-    });
-
     return unsub;
-  }, [roomId]);
+  }, [activeRoomId]);
 
-  const displayName = useMemo(() => {
-    if (!authUser) return "";
-    if (profile?.firstName || profile?.lastName) {
-      return `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
-    }
-    return authUser.displayName || authUser.email || "Member";
-  }, [authUser, profile]);
+  // Auto-scroll to bottom INSIDE the messages container
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages.length, activeRoomId]);
 
-  const age = useMemo(() => getAge(profile?.birthday), [profile]);
-  const roomConfig = ROOMS.find((r) => r.id === roomId);
-  const roomIsRestricted = roomConfig?.restricted21;
-  const canAccessRoom =
-    !roomIsRestricted || (age !== null && age >= 21);
-
+  // ===== Sending a message =====
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!authUser || !text.trim() || !canAccessRoom) return;
+    if (!user || !newMessage.trim() || !canUseActiveRoom) return;
 
     setSending(true);
+    setError("");
+
     try {
-      await addDoc(collection(db, "rooms", roomId, "messages"), {
-        text: text.trim(),
-        uid: authUser.uid,
+      const displayName =
+        user.displayName || user.email?.split("@")[0] || "AreaRED Member";
+
+      await addDoc(collection(db, "rooms", activeRoomId, "messages"), {
+        text: newMessage.trim(),
+        uid: user.uid,
         displayName,
         createdAt: serverTimestamp(),
       });
-      setText("");
+
+      setNewMessage("");
     } catch (err) {
-      console.error(err);
+      console.error("[Chat] Firestore addDoc error:", err);
+      setError("Could not send message. Please try again.");
     } finally {
       setSending(false);
     }
   };
 
-  if (authLoading) {
+  if (authLoading || !profileLoaded) {
     return (
-      <Container className="py-4">
+      <Container className="py-4 d-flex align-items-center justify-content-center">
         <Spinner animation="border" />
       </Container>
     );
   }
 
-  if (!authUser) {
+  if (!user) {
     return (
       <Container className="py-4">
-        <Alert variant="warning">
-          You need to sign in to use chat.
-        </Alert>
+        <Card className="p-4">
+          <h2 className="mb-3">Chats</h2>
+          <p className="text-muted mb-3">
+            Sign in to join AreaRED chat rooms, coordinate events, and stay in
+            the loop with your committees.
+          </p>
+          <Alert variant="warning">
+            You’re not signed in. Use the <strong>Sign In</strong> button in the
+            top-right to access chats.
+          </Alert>
+        </Card>
       </Container>
     );
   }
 
+  // compute preview + time for each room using current room’s messages only
+  const getRoomPreview = (roomId) => {
+    if (roomId === activeRoomId && messages.length > 0) {
+      const last = messages[messages.length - 1];
+      return last.text || activeRoom?.description || "";
+    }
+    return ROOMS.find((r) => r.id === roomId)?.description || "";
+  };
+
+  const getRoomTime = (roomId) => {
+    if (roomId === activeRoomId && messages.length > 0) {
+      const last = messages[messages.length - 1];
+      const created =
+        last.createdAt?.toDate?.() || last.createdAt || null;
+      if (!created) return "";
+      return created.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+    return "";
+  };
+
   return (
     <Container className="py-4">
-      <Card className="p-3">
-        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-          <h2 className="mb-0">Chat</h2>
-          <div className="text-muted small">
-            Signed in as <strong>{displayName}</strong>
-          </div>
-        </div>
+      <Card className="chat-shell">
+        <Row className="g-0 chat-body-row">
+          {/* LEFT: thread list */}
+          <Col md={4} lg={3} className="chat-sidebar">
+            <div className="chat-sidebar-header">
+              <h5 className="mb-0">Messages</h5>
+              <span className="chat-sidebar-sub">
+                {user.displayName || user.email}
+              </span>
+            </div>
 
-        <Nav
-          variant="pills"
-          className="mb-3 flex-wrap"
-          activeKey={roomId}
-          onSelect={(k) => k && setRoomId(k)}
-        >
-          {ROOMS.map((r) => (
-            <Nav.Item key={r.id}>
-              <Nav.Link eventKey={r.id}>
-                {r.label}
-                {r.restricted21 && " (21+)"}
-              </Nav.Link>
-            </Nav.Item>
-          ))}
-        </Nav>
+            <ListGroup variant="flush" className="chat-thread-list">
+              {ROOMS.map((room) => {
+                const disabled = room.requires21 && !is21Plus;
+                const isActive = activeRoomId === room.id;
 
-        {roomIsRestricted && (profileLoading || age === null) && (
-          <Alert variant="info" className="mb-3">
-            To access the 21+ lounge, set your birthday on the Account page.
-          </Alert>
-        )}
+                let previewText = getRoomPreview(room.id);
+                if (previewText.length > 60) {
+                  previewText = previewText.slice(0, 57) + "…";
+                }
 
-        {roomIsRestricted && age !== null && age < 21 && (
-          <Alert variant="danger" className="mb-3">
-            This room is restricted to members 21 and older.
-          </Alert>
-        )}
+                const initials = room.name
+                  .split(" ")
+                  .map((w) => w[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase();
 
-        <div className="chat-messages mb-3" style={{ maxHeight: 400, overflowY: "auto" }}>
-          {messages.length === 0 ? (
-            <p className="text-muted">No messages yet. Say hi!</p>
-          ) : (
-            messages.map((m) => (
-              <div key={m.id} className="mb-2">
-                <div className="fw-semibold small">
-                  {m.displayName || "Member"}
+                const timeStr = getRoomTime(room.id);
+
+                return (
+                  <ListGroup.Item
+                    key={room.id}
+                    action={!disabled}
+                    active={isActive}
+                    onClick={() => !disabled && setActiveRoomId(room.id)}
+                    className={
+                      "chat-thread-item" +
+                      (disabled ? " chat-thread-disabled" : "") +
+                      (isActive ? " chat-thread-active" : "")
+                    }
+                  >
+                    <div className="chat-thread-avatar">
+                      <div className="chat-thread-avatar-pill">{initials}</div>
+                    </div>
+                    <div className="chat-thread-main">
+                      <div className="chat-thread-top">
+                        <span className="chat-thread-name">{room.name}</span>
+                        {timeStr && (
+                          <span className="chat-thread-time">{timeStr}</span>
+                        )}
+                      </div>
+                      <div className="chat-thread-bottom">
+                        <span className="chat-thread-preview">
+                          {previewText}
+                        </span>
+                        {room.requires21 && (
+                          <span className="chat-thread-badge">21+</span>
+                        )}
+                      </div>
+                      {disabled && (
+                        <div className="chat-thread-locked">
+                          Add your birthday on the Account page to unlock.
+                        </div>
+                      )}
+                    </div>
+                  </ListGroup.Item>
+                );
+              })}
+            </ListGroup>
+          </Col>
+
+          {/* RIGHT: conversation view */}
+          <Col md={8} lg={9} className="chat-main">
+            <div className="chat-main-header">
+              <div>
+                <h4 className="mb-0">{activeRoom?.name}</h4>
+                <div className="chat-main-sub">
+                  {activeRoom?.description}
                 </div>
-                <div>{m.text}</div>
               </div>
-            ))
-          )}
-        </div>
+              {activeRoom?.requires21 && (
+                <Badge bg={canUseActiveRoom ? "warning" : "secondary"}>
+                  21+ room
+                </Badge>
+              )}
+            </div>
 
-        <Form onSubmit={handleSend}>
-          <Form.Group controlId="chatText" className="d-flex gap-2">
-            <Form.Control
-              type="text"
-              placeholder={
-                canAccessRoom
-                  ? "Type a message…"
-                  : "You do not have access to this room."
-              }
-              value={text}
-              disabled={!canAccessRoom || sending}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <Button
-              type="submit"
-              disabled={!canAccessRoom || !text.trim() || sending}
-            >
-              Send
-            </Button>
-          </Form.Group>
-        </Form>
+            {!canUseActiveRoom && (
+              <Alert variant="secondary" className="mb-0 chat-access-alert">
+                This room is only available to members who are 21 or older. Add
+                your birthday on the <strong>Account</strong> page if you
+                should have access.
+              </Alert>
+            )}
+
+            {error && (
+              <Alert variant="danger" className="mb-0 chat-error-alert">
+                {error}
+              </Alert>
+            )}
+
+            {/* Messages viewport (scrolls internally) */}
+            <div className="chat-messages" ref={messagesContainerRef}>
+              {messagesLoading ? (
+                <div className="chat-messages-empty">
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Loading messages…
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="chat-messages-empty">
+                  No messages yet. Start the conversation!
+                </div>
+              ) : (
+                messages.map((msg) => {
+                  const isMe = msg.uid === user.uid;
+                  const created =
+                    msg.createdAt?.toDate?.() || msg.createdAt || null;
+                  const timeStr = created
+                    ? created.toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })
+                    : "";
+
+                  const initials =
+                    msg.displayName?.trim()?.[0]?.toUpperCase() ||
+                    msg.uid?.[0]?.toUpperCase() ||
+                    "?";
+
+                  return (
+                    <div
+                      key={msg.id}
+                      className={
+                        "chat-message" + (isMe ? " chat-message-me" : "")
+                      }
+                    >
+                      <div className="chat-avatar">
+                        {msg.photoURL ? (
+                          <img
+                            src={msg.photoURL}
+                            alt={`${msg.displayName || "User"} avatar`}
+                          />
+                        ) : (
+                          <div className="chat-avatar-fallback">
+                            {initials}
+                          </div>
+                        )}
+                      </div>
+                      <div className="chat-bubble-wrap">
+                        <div className="chat-meta">
+                          <span className="chat-name">
+                            {msg.displayName || "AreaRED Member"}
+                          </span>
+                          {timeStr && (
+                            <span className="chat-time">{timeStr}</span>
+                          )}
+                        </div>
+                        <div className="chat-bubble">{msg.text}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Input bar pinned to bottom of card */}
+            <div className="chat-input-bar">
+              {canUseActiveRoom ? (
+                <Form onSubmit={handleSend} className="w-100 d-flex gap-2">
+                  <Form.Control
+                    as="textarea"
+                    rows={1}
+                    placeholder="Send a message…"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    disabled={sending || messagesLoading}
+                    aria-label="Chat message"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={
+                      sending || messagesLoading || !newMessage.trim()
+                    }
+                  >
+                    {sending ? "Sending…" : "Send"}
+                  </Button>
+                </Form>
+              ) : (
+                <div className="text-muted small">
+                  You don’t currently have access to this room.
+                </div>
+              )}
+            </div>
+          </Col>
+        </Row>
       </Card>
     </Container>
   );
