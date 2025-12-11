@@ -1,55 +1,30 @@
-import React, { useRef, useState } from "react";
-import { Navbar, Nav, Container } from "react-bootstrap";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import React from "react";
+import { NavLink, Link } from "react-router-dom";
+import { Container, Nav, Navbar } from "react-bootstrap";
 import logo from "../assets/AreaREDLogo.png";
 
-export default function NavBar() {
-  const [open, setOpen] = useState(false);
-  const hoverTimer = useRef(null);
-  const navigate = useNavigate();
-
+export default function NavBar({ user }) {
   return (
     <Navbar className="navbar-uw navbar-elevated" variant="dark">
       <Container fluid className="navbar-container">
-        {/* Brand */}
+
         <div className="brand-row">
-          <Navbar.Brand
-            as={Link}
-            to="/"
-            className="brand-uw d-flex align-items-center"
-            onClick={() => setOpen(false)}
-          >
+          <Navbar.Brand as={Link} to="/" className="brand-uw d-flex align-items-center">
             <img src={logo} alt="AreaRED Logo" className="brand-logo" />
           </Navbar.Brand>
         </div>
 
-        {/* Nav */}
         <Nav className="nav-row">
-          <Nav.Link as={NavLink} to="/" end className="navlink-pill" onClick={() => setOpen(false)}>
-            Home
-          </Nav.Link>
+          <Nav.Link as={NavLink} to="/" end className="navlink-pill">Home</Nav.Link>
+          <Nav.Link as={NavLink} to="/calendar" className="navlink-pill">Calendar</Nav.Link>
+          <Nav.Link as={NavLink} to="/committees" className="navlink-pill">Committees</Nav.Link>
+          <Nav.Link as={NavLink} to="/links" className="navlink-pill">Links</Nav.Link>
 
-          <Nav.Link as={NavLink} to="/calendar" className="navlink-pill" onClick={() => setOpen(false)}>
-            Calendar
-          </Nav.Link>
-
-          <Nav.Link
-            as={NavLink}
-            to="/committees"
-            className="navlink-pill"
-            onClick={() => setOpen(false)}
-          >
-            Committees
-          </Nav.Link>
-
-          <Nav.Link
-            as={NavLink}
-            to="/links"
-            className="navlink-pill"
-            onClick={() => setOpen(false)}
-          >
-            Links
-          </Nav.Link>
+          {user && (
+            <Nav.Link as={NavLink} to="/chat" className="navlink-pill">
+              Chat
+            </Nav.Link>
+          )}
         </Nav>
       </Container>
     </Navbar>
