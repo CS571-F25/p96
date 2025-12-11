@@ -963,12 +963,13 @@ p {
 .chat-shell {
   display: flex;
   flex-direction: column;
-  height: 72vh;          /* fixed height for the whole chat card */
-  max-height: 72vh;
+  /* Lock card to viewport height minus navbar + a little padding */
+  height: calc(100vh - 110px);
+  max-height: calc(100vh - 110px);
   border-radius: 18px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06),
               0 2px 8px rgba(0, 0, 0, 0.04);
-  overflow: hidden;      /* prevents content from spilling outside the card */
+  overflow: hidden;
 }
 
 /* Row inside card fills available height but does NOT grow the card */
@@ -1319,47 +1320,4 @@ p {
   color: #6b7280;
 }
 
-/* Mobile tweak */
-@media (max-width: 768px) {
-  /* Let the card grow with content instead of forcing a fixed height */
-  .chat-shell {
-    height: auto;
-    max-height: none;
-  }
 
-  /* Stack sidebar ABOVE chat, not side-by-side */
-  .chat-body-row {
-    flex-direction: column;
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-  }
-
-  /* Sidebar becomes a simple header list */
-  .chat-sidebar {
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    border-right: 0;
-    border-bottom: 1px solid #e1e3e8;
-  }
-
-  /* Conversation takes the rest and can scroll internally */
-  .chat-main {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  .chat-messages {
-    max-height: 60vh;          /* scroll area for the conversation */
-  }
-
-  /* Make bubbles wider on small screens */
-  .chat-message {
-    max-width: 90%;
-  }
-
-  .chat-bubble {
-    max-width: 90%;
-  }
-}

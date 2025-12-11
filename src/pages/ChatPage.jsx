@@ -21,6 +21,7 @@ import {
   doc,
   getDoc,
   serverTimestamp,
+  limit,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase";
@@ -153,6 +154,36 @@ export default function ChatPage() {
   const canUseActiveRoom =
     !activeRoom?.requires21 || (activeRoom?.requires21 && is21Plus);
 
+    // ===== NEW: Subscribe to LAST message of EVERY room for the sidebar =====
+  useEffect(() => {
+    const unsubscribes = [];
+
+    ROOMS.forEach((room) => {
+      try {
+        const msgsRef = collection(db, "rooms", room.id, "messages");
+        // Query: Give me the 1 newest message (descending order)
+        const q = query(msgsRef, orderBy("createdAt", "desc"), limit(1));
+
+        const unsub = onSnapshot(q, (snapshot) => {
+          if (!snapshot.empty) {
+            const lastData = snapshot.docs[0].data();
+            setLastMessages((prev) => ({
+              ...prev,
+              [room.id]: lastData,
+            }));
+          }
+        });
+        unsubscribes.push(unsub);
+      } catch (err) {
+        console.error(`Error subscribing to ${room.name} preview:`, err);
+      }
+    });
+
+    // Cleanup all listeners when the user leaves the page
+    return () => {
+      unsubscribes.forEach((u) => u());
+    };
+  }, []);
   // ===== Subscribe to messages for the current room (rooms/{roomId}/messages) =====
   useEffect(() => {
     setMessagesLoading(true);
@@ -171,14 +202,6 @@ export default function ChatPage() {
           }));
           setMessages(list);
           setMessagesLoading(false);
-
-          if (list.length > 0) {
-            const last = list[list.length - 1];
-            setLastMessages((prev) => ({
-              ...prev,
-              [activeRoomId]: last,
-            }));
-          }
         },
         (err) => {
           console.error("[Chat] onSnapshot error:", err);
@@ -195,13 +218,62 @@ export default function ChatPage() {
     }
   }, [activeRoomId]);
 
-  // Always scroll to bottom of current room
-  useEffect(() => {
+// Helper to scroll to bottom of the messages container
+const scrollToBottom = () => {
     const el = messagesContainerRef.current;
     if (!el) return;
-    if (!messages.length) return;
     el.scrollTop = el.scrollHeight;
-  }, [messages.length, activeRoomId, showRoomListOnMobile]);
+  };
+  
+  // Scroll when messages change or when you switch rooms
+  useEffect(() => {
+    if (!messages.length) return;
+  
+    // tiny delay so layout is applied before we measure scrollHeight
+    const id = setTimeout(() => {
+      scrollToBottom();
+    }, 0);
+  
+    return () => clearTimeout(id);
+  }, [messages, activeRoomId]);
+  
+  // After images load, scroll again so you're truly at the bottom
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    if (!messages.length) return;
+  
+    const imgs = container.querySelectorAll("img");
+    if (!imgs.length) {
+      scrollToBottom();
+      return;
+    }
+  
+    let remaining = imgs.length;
+  
+    const handleDone = () => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        scrollToBottom();
+      }
+    };
+  
+    imgs.forEach((img) => {
+      if (img.complete) {
+        handleDone();
+      } else {
+        img.addEventListener("load", handleDone);
+        img.addEventListener("error", handleDone);
+      }
+    });
+  
+    return () => {
+      imgs.forEach((img) => {
+        img.removeEventListener("load", handleDone);
+        img.removeEventListener("error", handleDone);
+      });
+    };
+  }, [messages, activeRoomId]);
 
   // ===== Attachment handling =====
   const handleAttachmentClick = () => {
@@ -314,41 +386,46 @@ export default function ChatPage() {
   const showConversation =
     !isMobile || (isMobile && !showRoomListOnMobile);
 
-  return (
-    <Container className="py-4">
-      <Card
-        className="chat-shell"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: isMobile ? "auto" : "72vh",
-          maxHeight: isMobile ? "none" : "72vh",
-          overflow: "hidden",
-        }}
-      >
-        <Row
-          className="g-0 chat-body-row"
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflow: "hidden",
-            flexDirection: isMobile ? "column" : "row",
-          }}
-        >
-          {/* LEFT: thread list */}
-          {showSidebar && (
-            <Col
-              md={4}
-              lg={3}
-              className="chat-sidebar"
+    return (
+        <Container className="py-4">
+          <Card
+            className="chat-shell"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              // FIX: Force fixed height on mobile too (adjust 110px to match your navbar height)
+              height: "calc(100vh - 160px)", 
+              maxHeight: "calc(100vh - 160px)",
+              overflow: "hidden",
+            }}
+          >
+            <Row
+              className="g-0 chat-body-row"
               style={{
-                display: "flex",
-                flexDirection: "column",
+                flex: 1,
                 minHeight: 0,
-                borderRight: showConversation && !isMobile ? "1px solid #e1e3e8" : "none",
-                borderBottom: isMobile ? "1px solid #e1e3e8" : "none",
+                overflow: "hidden",
+                // FIX: Keep row direction. Since we hide the other column via logic, 
+                // the active column will naturally fill the space.
+                flexDirection: "row", 
               }}
             >
+              {/* LEFT: thread list */}
+              {showSidebar && (
+                <Col
+                  xs={12} // FIX: Full width on mobile
+                  md={4}
+                  lg={3}
+                  className="chat-sidebar"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: 0,
+                    height: "100%", // FIX: Ensure full height
+                    borderRight: showConversation && !isMobile ? "1px solid #e1e3e8" : "none",
+                    // Removed borderBottom since side-by-side logic applies now
+                  }}
+                >
               <div className="chat-sidebar-header">
                 <h5 className="mb-0">Messages</h5>
                 <span className="chat-sidebar-sub">
@@ -365,8 +442,21 @@ export default function ChatPage() {
                   const disabled = room.requires21 && !is21Plus;
                   const isActive = activeRoomId === room.id;
                   const preview = lastMessages[room.id];
+                  
+                  let previewText = room.description;
 
-                  let previewText = preview?.text || room.description;
+                  if (preview) {
+                    // Get the sender's name (use first name only to save space)
+                    const senderName = (preview.displayName || "Member");
+                    
+                    // If text is empty (e.g. photo only), show a fallback string
+                    const content = preview.text 
+                      ? preview.text 
+                      : (preview.attachment ? "Sent an image" : "");
+
+                    previewText = `${senderName}: ${content}`;
+                  }
+
                   if (previewText.length > 60) {
                     previewText = previewText.slice(0, 57) + "…";
                   }
@@ -441,9 +531,10 @@ export default function ChatPage() {
             </Col>
           )}
 
-          {/* RIGHT: conversation view */}
-          {showConversation && (
+{/* RIGHT: conversation view */}
+{showConversation && (
             <Col
+              xs={12} // FIX: Full width on mobile
               md={8}
               lg={9}
               className="chat-main"
@@ -451,6 +542,7 @@ export default function ChatPage() {
                 display: "flex",
                 flexDirection: "column",
                 minHeight: 0,
+                height: "100%", // FIX: Force full height
                 maxHeight: "100%",
               }}
             >
