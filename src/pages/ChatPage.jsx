@@ -20,6 +20,9 @@ import {
   addDoc,
   doc,
   getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
   serverTimestamp,
   limit,
 } from "firebase/firestore";
@@ -82,6 +85,52 @@ export default function ChatPage() {
 
   const messagesContainerRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // 1. REACTION LOGIC
+  const handleReaction = async (msgId, emoji) => {
+    if (!user) return;
+    const msgRef = doc(db, "rooms", activeRoomId, "messages", msgId);
+    
+    // Find the message in our local state to check if we already reacted
+    const msg = messages.find((m) => m.id === msgId);
+    const currentReactions = msg?.reactions?.[emoji] || [];
+    const hasReacted = currentReactions.includes(user.uid);
+
+    try {
+      if (hasReacted) {
+        await updateDoc(msgRef, {
+          [`reactions.${emoji}`]: arrayRemove(user.uid),
+        });
+      } else {
+        await updateDoc(msgRef, {
+          [`reactions.${emoji}`]: arrayUnion(user.uid),
+        });
+      }
+    } catch (err) {
+      console.error("Error updating reaction:", err);
+    }
+  };
+
+  // 2. DOWNLOAD LOGIC (Forces browser to download instead of just opening)
+  const handleDownload = async (url, filename) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || "download";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+      // Fallback: just open in new tab
+      window.open(url, "_blank");
+    }
+  };
 
   // ===== Simple viewport detection for mobile vs desktop =====
   const [isMobile, setIsMobile] = useState(
@@ -615,106 +664,146 @@ const scrollToBottom = () => {
                     No messages yet. Start the conversation!
                   </div>
                 ) : (
-                  messages.map((msg) => {
-                    const isMe = msg.uid === user.uid;
-                    const created =
-                      msg.createdAt?.toDate?.() || msg.createdAt || null;
-                    const timeStr = created
-                      ? created.toLocaleTimeString([], {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })
-                      : "";
-
-                    const nameToShow = isMe
-                      ? user.displayName || user.email || "AreaRED Member"
-                      : msg.displayName || "AreaRED Member";
-
-                    const avatarURL = isMe
-                      ? user.photoURL || null
-                      : msg.photoURL || null;
-
-                    const initials =
-                      (nameToShow && nameToShow.trim()[0]?.toUpperCase()) ||
-                      msg.uid?.[0]?.toUpperCase() ||
-                      "?";
-
-                    const attachment = msg.attachment || null;
-                    const isImage =
-                      attachment?.type?.startsWith("image/") ?? false;
-
-                    return (
-                      <div
-                        key={msg.id}
-                        className={
-                          "chat-message" + (isMe ? " chat-message-me" : "")
-                        }
-                      >
-                        <div className="chat-avatar">
-                          {avatarURL ? (
-                            <img
-                              src={avatarURL}
-                              alt={`${nameToShow} avatar`}
-                            />
-                          ) : (
-                            <div className="chat-avatar-fallback">
-                              {initials}
-                            </div>
-                          )}
-                        </div>
-                        <div className="chat-bubble-wrap">
-                          <div className="chat-meta">
-                            <span className="chat-name">
-                              {nameToShow}
-                            </span>
-                            {timeStr && (
-                              <span className="chat-time">
-                                {timeStr}
-                              </span>
+                    messages.map((msg) => {
+                        const isMe = msg.uid === user.uid;
+                        const created = msg.createdAt?.toDate?.() || msg.createdAt || null;
+                        const timeStr = created
+                          ? created.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+                          : "";
+    
+                        const nameToShow = isMe
+                          ? user.displayName || user.email || "Me"
+                          : msg.displayName || "Member";
+    
+                        const avatarURL = isMe ? user.photoURL : msg.photoURL;
+                        const initials = (nameToShow[0] || "?").toUpperCase();
+    
+                        const attachment = msg.attachment || null;
+                        const isImage = attachment?.type?.startsWith("image/") ?? false;
+    
+                        // Reaction stuff
+                        const REACTION_OPTIONS = ["❤️", "😂", "😮", "😢", "👍", "👎"];
+                        const reactions = msg.reactions || {};
+                        const hasReactions = Object.keys(reactions).some(k => reactions[k]?.length > 0);
+    
+                        return (
+                          <div
+                            key={msg.id}
+                            className={"chat-message-row " + (isMe ? "justify-content-end" : "")}
+                            style={{ display: "flex", gap: "10px", marginBottom: "16px" }}
+                          >
+                            {!isMe && (
+                              <div className="chat-avatar">
+                                {avatarURL ? (
+                                  <img src={avatarURL} alt="avatar" />
+                                ) : (
+                                  <div className="chat-avatar-fallback">{initials}</div>
+                                )}
+                              </div>
                             )}
+    
+                            <div className={"chat-bubble-wrap " + (isMe ? "align-items-end" : "align-items-start")}>
+                              {/* Name & Time */}
+                              <div className="chat-meta">
+                                <span className="chat-name">{!isMe ? nameToShow : ""}</span>
+                                {/* <span className="chat-time">{timeStr}</span> */} 
+                                {/* Optional: hiding time for cleaner look, or keep it if you prefer */}
+                              </div>
+    
+                              {/* Message Group (Bubble + Actions) */}
+                              <div className="chat-content-group" style={{ position: "relative" }}>
+                                
+                                {/* Text Bubble */}
+                                {msg.text && (
+                                  <div className={isMe ? "chat-bubble-me" : "chat-bubble-them"}>
+                                    {msg.text}
+                                  </div>
+                                )}
+    
+                                {/* Image Attachment */}
+                                {attachment && isImage && (
+                                  <div className="chat-image-bubble" style={{ position: "relative" }}>
+                                    <img
+                                      src={attachment.url}
+                                      alt="attachment"
+                                      onClick={() => window.open(attachment.url, "_blank")}
+                                    />
+                                    {/* Download Button Overlay */}
+                                    <button
+                                      className="download-overlay-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDownload(attachment.url, attachment.name);
+                                      }}
+                                      title="Download Image"
+                                    >
+                                      ⬇
+                                    </button>
+                                  </div>
+                                )}
+    
+                                {/* File Attachment */}
+                                {attachment && !isImage && (
+                                  <div className="chat-file-card">
+                                    <div className="file-info">
+                                      <div className="file-icon">📄</div>
+                                      <div className="file-name">{attachment.name}</div>
+                                    </div>
+                                    <button 
+                                      className="file-download-btn"
+                                      onClick={() => handleDownload(attachment.url, attachment.name)}
+                                    >
+                                      ⬇
+                                    </button>
+                                  </div>
+                                )}
+    
+{/* HOVER ACTIONS: Reaction Picker */}
+<div className={`message-actions ${isMe ? "actions-left" : "actions-right"}`}>
+                              {/* 1. Button comes FIRST now */}
+                              <button className="add-reaction-btn">☺</button>
+                              
+                              {/* 2. Picker comes SECOND (so CSS can find it) */}
+                              <div className="reaction-picker">
+                                {REACTION_OPTIONS.map((emoji) => (
+                                  <span
+                                    key={emoji}
+                                    className="emoji-opt"
+                                    onClick={() => handleReaction(msg.id, emoji)}
+                                  >
+                                    {emoji}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                              </div>
+    
+                              {/* EXISTING REACTIONS DISPLAY */}
+                              {hasReactions && (
+                                <div className="reactions-row">
+                                  {Object.entries(reactions).map(([emoji, uids]) => {
+                                    if (!uids || uids.length === 0) return null;
+                                    const iReacted = uids.includes(user.uid);
+                                    return (
+                                      <div
+                                        key={emoji}
+                                        className={`reaction-chip ${iReacted ? "reacted" : ""}`}
+                                        onClick={() => handleReaction(msg.id, emoji)}
+                                      >
+                                        {emoji} <span className="count">{uids.length}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                              
+                              {/* Time below bubble */}
+                              <div className="chat-time-tiny">{timeStr}</div>
+    
+                            </div>
                           </div>
-                          {/* Text + attachments */}
-                          {msg.text && msg.text.trim() && (
-                            <div className="chat-bubble">{msg.text}</div>
-                          )}
-
-                          {attachment && isImage && (
-                            <div className="chat-image-bubble">
-                              <a
-                                href={attachment.url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                <img
-                                  src={attachment.url}
-                                  alt={attachment.name || "Attachment"}
-                                  className="chat-image"
-                                  onLoad={() => {
-                                    // keep scrolled to bottom when images finish loading
-                                    const el = messagesContainerRef.current;
-                                    if (!el) return;
-                                    el.scrollTop = el.scrollHeight;
-                                  }}
-                                />
-                              </a>
-                            </div>
-                          )}
-
-                          {attachment && !isImage && (
-                            <div className="chat-file-bubble">
-                              <a
-                                href={attachment.url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {attachment.name || "Download attachment"}
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
+                        );
+                      })
                 )}
               </div>
 
@@ -769,22 +858,16 @@ const scrollToBottom = () => {
                       className="d-none"
                       onChange={handleAttachmentChange}
                     />
-                    {/* Attachment button */}
-                    <Button
+{/* Modern Plus Button */}
+<button
                       type="button"
-                      variant="light"
+                      className="chat-plus-btn"
                       onClick={handleAttachmentClick}
                       disabled={sending || messagesLoading}
-                      style={{
-                        borderRadius: "999px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        paddingInline: "0.6rem",
-                      }}
+                      title="Add photo or file"
                     >
-                      📎
-                    </Button>
+                      <span style={{ fontSize: "1.5rem", lineHeight: 1, marginTop: -2 }}>+</span>
+                    </button>
                     {/* Message input */}
                     <Form.Control
                       as="textarea"
