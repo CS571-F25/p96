@@ -4,29 +4,29 @@ import { EVENTS } from "../data/events";
 
 /** Color mapping (badges + active chips) */
 const TAG_COLORS = {
-    // Types
-    Game: "#C5050C",
-    Meeting: "#1E58A5",
-    "Special Event": "#6E7F5E",
-    Volunteer: "#2F8F5B",
-    Other: "#71717A", // slightly cooler gray
-  
-    // Sports
-    Football: "#8B1A1A",
-    Basketball: "#F97316",   // bright orange
-    Volleyball: "#B45309",   // deeper amber
-    Hockey: "#1E58A5",
-    Soccer: "#0EA5E9",       // sky blue
-    Wrestling: "#7A3B8F",
-    "Track & Field": "#3F7F7F",
-    "Cross Country": "#3F7F7F",
-    "Swimming & Diving": "#0E7490",
-    Softball: "#A855F7",
-    Baseball: "#2563EB",
-    Golf: "#16A34A",
-    Tennis: "#10B981",
-    Rowing: "#6B7280",
-  };
+  // Types
+  Game: "#C5050C",
+  Meeting: "#1E58A5",
+  "Special Event": "#6E7F5E",
+  Volunteer: "#2F8F5B",
+  Other: "#71717A", // slightly cooler gray
+
+  // Sports
+  Football: "#8B1A1A",
+  Basketball: "#F97316", // bright orange
+  Volleyball: "#B45309", // deeper amber
+  Hockey: "#1E58A5",
+  Soccer: "#0EA5E9", // sky blue
+  Wrestling: "#7A3B8F",
+  "Track & Field": "#3F7F7F",
+  "Cross Country": "#3F7F7F",
+  "Swimming & Diving": "#0E7490",
+  Softball: "#A855F7",
+  Baseball: "#2563EB",
+  Golf: "#16A34A",
+  Tennis: "#10B981",
+  Rowing: "#6B7280",
+};
 
 const nice = (s) => s || "Other";
 const getColor = (label) => TAG_COLORS[label] || TAG_COLORS.Other;
@@ -57,18 +57,15 @@ export default function Calendar() {
     setActiveSports(ns);
   };
   const selectAllSports = () => setActiveSports(new Set(allSports));
-  const selectNoSports = () => setActiveSports(new Set()); // <- no filters => show nothing
+  const selectNoSports = () => setActiveSports(new Set()); // no events when empty
 
-  /** Apply filters
-   *  - Sport must be selected (including “Other” for no-sport events)
-   *  - If onlyVolunteers is ON, type must be Volunteer
-   */
+  /** Apply filters */
   const filtered = useMemo(() => {
     return EVENTS.filter((e) => {
-      const s = nice(e.sport);                // "Other" if missing
-      const sportOK = activeSports.has(s);    // <- strict: empty set => nothing passes
+      const s = nice(e.sport); // "Other" if missing
+      const sportOK = activeSports.has(s); // strict; empty set => nothing passes
       const isVol = nice(e.type) === "Volunteer";
-      const volunteerOK = onlyVolunteers ? isVol : true;
+      const volunteerOK = onlyVolunteers ? isVol : true; // volunteers always appear when mixed
       return sportOK && volunteerOK;
     }).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
   }, [activeSports, onlyVolunteers]);
@@ -84,7 +81,7 @@ export default function Calendar() {
       </p>
 
       {/* ===== Filters ===== */}
-      <div className="card p-3 mb-3">
+      <div className="card p-3 mb-3" aria-label="Calendar filters">
         {/* Only-volunteer toggle */}
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
           <div className="fw-semibold">Only volunteer events:</div>
@@ -103,11 +100,23 @@ export default function Calendar() {
         </div>
 
         {/* Sports chips (no "Sport:" label) */}
-        <div className="d-flex flex-wrap gap-2">
-          <button className="btn btn-light btn-sm" onClick={selectAllSports}>
+        <div
+          className="d-flex flex-wrap gap-2"
+          role="group"
+          aria-label="Filter events by sport"
+        >
+          <button
+            className="btn btn-light btn-sm"
+            type="button"
+            onClick={selectAllSports}
+          >
             All
           </button>
-          <button className="btn btn-light btn-sm" onClick={selectNoSports}>
+          <button
+            className="btn btn-light btn-sm"
+            type="button"
+            onClick={selectNoSports}
+          >
             None
           </button>
 
@@ -118,13 +127,16 @@ export default function Calendar() {
               <button
                 key={s}
                 type="button"
-                className={`filter-chip chip-sport ${active ? "chip-on" : ""} sport-${s.toLowerCase().replace(/\s+/g, "-")}`}
+                className={`filter-chip chip-sport ${
+                  active ? "chip-on" : ""
+                } sport-${s.toLowerCase().replace(/\s+/g, "-")}`}
                 style={{
                   background: active ? getColor(s) : "transparent",
                   color: active ? fg : "#222",
                   borderColor: getColor(s),
                 }}
                 onClick={() => toggleSport(s)}
+                aria-pressed={active}
               >
                 {s}
               </button>
@@ -132,20 +144,28 @@ export default function Calendar() {
           })}
         </div>
 
-        <div className="text-end small mt-2">{filtered.length} shown</div>
+        <div className="text-end small mt-2" aria-live="polite">
+          {filtered.length} event{filtered.length === 1 ? "" : "s"} shown
+        </div>
       </div>
 
       {/* ===== Results ===== */}
       {dates.map((d) => (
-        <section key={d} className="mb-3">
-          <h5 className="mb-2">{d}</h5>
+        <section key={d} className="mb-3" aria-label={`Events on ${d}`}>
+          <h2 className="mb-2">{d}</h2>
           {grouped[d].map((e) => (
-            <article key={e.id} className="card p-3 mb-3 event-card">
+            <article
+              key={e.id}
+              className="card p-3 mb-3 event-card"
+              aria-label={`${e.title}, ${nice(e.type)} in ${nice(e.sport)}`}
+            >
               {/* Badges top-right: Type then Sport (if any) */}
               <div className="event-badges">
                 {e.type && (
                   <span
-                    className={`badge tag-badge badge-type-${nice(e.type).toLowerCase().replace(/\s+/g, "-")}`}
+                    className={`badge tag-badge badge-type-${nice(e.type)
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
                     style={{ background: getColor(nice(e.type)) }}
                   >
                     {nice(e.type)}
@@ -153,7 +173,9 @@ export default function Calendar() {
                 )}
                 {e.sport && (
                   <span
-                    className={`badge tag-badge badge-sport-${nice(e.sport).toLowerCase().replace(/\s+/g, "-")}`}
+                    className={`badge tag-badge badge-sport-${nice(e.sport)
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
                     style={{ background: getColor(nice(e.sport)) }}
                   >
                     {nice(e.sport)}
@@ -161,7 +183,7 @@ export default function Calendar() {
                 )}
               </div>
 
-              <h5 className="mb-1">{e.title}</h5>
+              <h3 className="mb-1">{e.title}</h3>
               <div className="text-muted small mb-2 event-meta">
                 {nice(e.type)} • {e.date}
                 {e.time ? ` @ ${e.time}` : ""} {e.venue ? `• ${e.venue}` : ""}
@@ -173,7 +195,12 @@ export default function Calendar() {
                 <div className="vol-cta-row">
                   <button
                     className="btn btn-primary btn-sm vol-btn"
-                    onClick={() => alert("Thanks! (Placeholder—hook to signup later)")}
+                    type="button"
+                    onClick={() =>
+                      alert(
+                        "Thanks for volunteering! (This is a course-project placeholder — link to a real form/email later.)"
+                      )
+                    }
                   >
                     Sign Up to Volunteer
                   </button>

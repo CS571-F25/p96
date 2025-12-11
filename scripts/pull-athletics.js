@@ -8,7 +8,6 @@
 
 import fs from "fs";
 import ical from "ical";
-import fetch from "node-fetch";
 
 const FEED_URL = "https://today.wisc.edu/events/tag/Athletics.ics";
 
@@ -20,13 +19,31 @@ const KEEP_PAST_DAYS = 1;
 const TZ = "America/Chicago";
 
 const SPORT_WORDS = [
-  "Volleyball", "Basketball", "Hockey", "Football", "Soccer", "Wrestling",
-  "Softball", "Baseball", "Track", "Tennis", "Golf", "Rowing", "Swim", "Swimming",
-  "Cross Country", "Hockey (W)", "Hockey (M)", "WBB", "MBB"
+  "Volleyball",
+  "Basketball",
+  "Hockey",
+  "Football",
+  "Soccer",
+  "Wrestling",
+  "Softball",
+  "Baseball",
+  "Track",
+  "Tennis",
+  "Golf",
+  "Rowing",
+  "Swim",
+  "Swimming",
+  "Cross Country",
+  "Hockey (W)",
+  "Hockey (M)",
+  "WBB",
+  "MBB",
 ];
 
 async function fetchICS(url) {
-  const res = await fetch(url, { headers: { "User-Agent": "AreaRED/1.0 (course project)" } });
+  const res = await fetch(url, {
+    headers: { "User-Agent": "AreaRED/1.0 (course project)" },
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const text = await res.text();
   return ical.parseICS(text);
@@ -34,9 +51,7 @@ async function fetchICS(url) {
 
 function toDateOnlyStr(d) {
   // YYYY-MM-DD in local TZ (America/Chicago)
-  const local = new Date(
-    d.toLocaleString("en-US", { timeZone: TZ })
-  );
+  const local = new Date(d.toLocaleString("en-US", { timeZone: TZ }));
   const y = local.getFullYear();
   const m = String(local.getMonth() + 1).padStart(2, "0");
   const day = String(local.getDate()).padStart(2, "0");
@@ -58,7 +73,9 @@ function guessSport(summary = "") {
     if (re.test(summary)) return w.replace(/\s+\(.*\)$/, "");
   }
   // Sometimes summary is like "Women's Volleyball vs ..."
-  const generic = summary.match(/\b(Volleyball|Basketball|Hockey|Football|Soccer|Wrestling|Softball|Baseball|Track|Tennis|Golf|Rowing|Swim|Swimming|Cross Country)\b/i);
+  const generic = summary.match(
+    /\b(Volleyball|Basketball|Hockey|Football|Soccer|Wrestling|Softball|Baseball|Track|Tennis|Golf|Rowing|Swim|Swimming|Cross Country)\b/i
+  );
   return generic ? generic[1] : "Other";
 }
 
@@ -71,17 +88,21 @@ function parseEvent(e) {
   const date = toDateOnlyStr(start);
 
   // Some ICS are all-day (floating) — time may be omitted; keep empty:
-  const time = e.datetype === "date" || e.type === "all-day" ? "" : toTimeStr(start);
+  const time =
+    e.datetype === "date" || e.type === "all-day" ? "" : toTimeStr(start);
 
   const sport = guessSport(e.summary);
   const title = e.summary.replace(/UW–?Madison/gi, "Wisconsin").trim();
 
   // “Game” is a fine default; tweak if summary hints otherwise
   let type = "Game";
-  if (/meeting|banquet|clinic|fan day|open house/i.test(e.summary)) type = "Event";
+  if (/meeting|banquet|clinic|fan day|open house/i.test(e.summary))
+    type = "Event";
   if (/practice|workout/i.test(e.summary)) type = "Practice";
 
-  const idBase = (e.uid || `${title}_${date}_${e.location || ""}`).replace(/\s+/g, "-").toLowerCase();
+  const idBase = (e.uid || `${title}_${date}_${e.location || ""}`)
+    .replace(/\s+/g, "-")
+    .toLowerCase();
   const id = `uw-${idBase.replace(/[^a-z0-9\-_]/g, "")}`;
 
   return {
@@ -107,8 +128,10 @@ function inWindow(ev) {
 
   const [y, m, d] = ev.date.split("-").map((n) => parseInt(n, 10));
   const dt = new Date(y, m - 1, d, 0, 0, 0, 0);
-  return dt >= new Date(startCut.getFullYear(), startCut.getMonth(), startCut.getDate()) &&
-         dt <= new Date(endCut.getFullYear(), endCut.getMonth(), endCut.getDate());
+  return (
+    dt >= new Date(startCut.getFullYear(), startCut.getMonth(), startCut.getDate()) &&
+    dt <= new Date(endCut.getFullYear(), endCut.getMonth(), endCut.getDate())
+  );
 }
 
 function dedupe(list) {
@@ -130,10 +153,16 @@ async function main() {
     .filter(Boolean)
     .filter(inWindow);
 
-  const cleaned = dedupe(parsed)
-    .sort((a, b) => (a.date || "").localeCompare(b.date || "") || (a.time || "").localeCompare(b.time || ""));
+  const cleaned = dedupe(parsed).sort(
+    (a, b) =>
+      (a.date || "").localeCompare(b.date || "") ||
+      (a.time || "").localeCompare(b.time || "")
+  );
 
-  fs.writeFileSync("src/data/events.auto.json", JSON.stringify(cleaned, null, 2));
+  fs.writeFileSync(
+    "src/data/events.auto.json",
+    JSON.stringify(cleaned, null, 2)
+  );
   console.log(`✅ Saved ${cleaned.length} events → src/data/events.auto.json`);
 }
 

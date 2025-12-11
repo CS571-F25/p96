@@ -1,3 +1,4 @@
+// src/pages/committee/Members.jsx
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { COMMITTEES } from "../../data/committees";
@@ -6,17 +7,21 @@ const SAMPLE_MEMBERS = [
   { name: "Alex Director", role: "Director" },
   { name: "Sam Lead", role: "Lead" },
   { name: "Jordan Member", role: "Member" },
-  { name: "Taylor Member", role: "Member" }
+  { name: "Taylor Member", role: "Member" },
 ];
 
 export default function CommitteeMembers() {
   const { slug } = useParams();
-  const c = COMMITTEES.find(x => x.slug === slug);
+  const c = COMMITTEES.find((x) => x.slug === slug);
   if (!c) {
     return (
       <div className="container py-4">
-        <div className="section"><h1>Committee Not Found</h1>
-        <Link to="/committees" className="btn btn-primary mt-2">Back</Link></div>
+        <div className="section">
+          <h1>Committee Not Found</h1>
+          <Link to="/committees" className="btn btn-primary mt-2">
+            Back
+          </Link>
+        </div>
       </div>
     );
   }
@@ -25,11 +30,12 @@ export default function CommitteeMembers() {
     <div className="container py-4">
       <nav className="breadcrumb-uw mb-2">
         <Link to="/committees">Committees</Link> <span className="crumb-sep">›</span>
-        <Link to={`/committees/${slug}/info`}>{c.name}</Link> <span className="crumb-sep">›</span>
+        <Link to={`/committees/${slug}/info`}>{c.name}</Link>{" "}
+        <span className="crumb-sep">›</span>
         <span>Members</span>
       </nav>
 
-      <h1 className="mb-2">{c.name} — Members</h1>
+      <h2 className="mb-2">{c.name} — Members</h2>
 
       <div className="section">
         <div className="list">
