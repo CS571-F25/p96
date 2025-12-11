@@ -280,3 +280,16 @@
   @media (min-width:700px){.ig-widget-aspect{min-height:680px}}
   @media (min-width:1024px){.ig-widget-aspect{min-height:760px}}
   .ig-widget-aspect iframe{position:absolute;inset:0;width:100%;height:100%}
+
+  /* Signed-up volunteer state (green button) */
+.vol-btn-signed {
+  background: #10b981 !important;    /* emerald-500 */
+  border-color: #059669 !important;
+  color: #fff !important;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35) !important;
+}
+
+.vol-btn-signed:hover {
+  background: #059669 !important;
+  border-color: #047857 !important;
+}

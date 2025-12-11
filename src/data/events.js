@@ -1,12 +1,10 @@
 // src/data/events.js
 // Merge: auto-pulled UW Athletics events + custom AreaRED events + volunteer needs
-
-import rawAuto from "./events.auto.json";
+import rawAuto from "./events.auto.json" assert { type: "json" };
 import { VOLUNTEER_NEEDS } from "./volunteerNeeds";
 
 /** Decode a few common HTML entities we see in UW feeds */
-function decodeEntities(s) {
-  if (!s || typeof s !== "string") return "";
+function decodeEntities(s = "") {
   return s
     .replaceAll("&amp;", "&")
     .replaceAll("&nbsp;", " ")
@@ -41,16 +39,11 @@ function normalizeSport(s) {
 function normalizeType(t) {
   if (!t) return "Other";
   const x = t.toLowerCase();
-  if (x.includes("volunteer")) return "Volunteer";
   if (x.includes("game") || x.includes("match") || x.includes("meet")) return "Game";
+  if (x.includes("volunteer")) return "Volunteer";
   if (x.includes("meeting") || x.includes("mtg")) return "Meeting";
-  if (x.includes("pep") || x.includes("rally") || x.includes("event")) return "Special Event";
+  if (x.includes("pep") || x.includes("rally")) return "Special Event";
   return "Other";
-}
-
-// Fallback ID if auto events don’t have one
-function cryptoRandom() {
-  return `auto-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 /** Ensure a uniform event shape */
@@ -60,17 +53,22 @@ function toEvent(e) {
     title: decodeEntities(e.title ?? ""),
     type: normalizeType(e.type),
     sport: normalizeSport(e.sport),
-    date: e.date, // YYYY-MM-DD
+    date: e.date,               // YYYY-MM-DD
     time: e.time ?? "",
     venue: decodeEntities(e.venue ?? ""),
     notes: decodeEntities(e.notes ?? ""),
-    source: e.source ?? "AreaRED",
+    badge: e.sport ? normalizeSport(e.sport) : normalizeType(e.type),
   };
 }
 
-// ---- Convert volunteer needs into event-style items
-const volunteerEvents = VOLUNTEER_NEEDS.map((n) =>
-  toEvent({
+// Fallback ID if auto events don’t have one
+function cryptoRandom() {
+  return `auto-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// ---- Convert volunteer needs into event-style items, with extra volunteer meta
+const volunteerEvents = VOLUNTEER_NEEDS.map((n) => {
+  const base = toEvent({
     id: `vol-${n.id}`,
     title: n.title,
     type: "Volunteer",
@@ -84,8 +82,16 @@ const volunteerEvents = VOLUNTEER_NEEDS.map((n) =>
     time: n.time,
     venue: n.location,
     notes: `${n.committee} • ${n.signedUp}/${n.capacity} filled`,
-  })
-);
+  });
+
+  return {
+    ...base,
+    _isVolunteer: true,
+    _volCapacity: n.capacity,
+    _volInitialSigned: n.signedUp,
+    _volCommittee: n.committee,
+  };
+});
 
 // ---- Your manual AreaRED events
 const customEvents = [
