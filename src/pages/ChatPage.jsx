@@ -436,18 +436,18 @@ const scrollToBottom = () => {
     !isMobile || (isMobile && !showRoomListOnMobile);
 
     return (
-        <Container className="py-4">
-          <Card
-            className="chat-shell"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              // FIX: Force fixed height on mobile too (adjust 110px to match your navbar height)
-              height: "calc(100vh - 160px)", 
-              maxHeight: "calc(100vh - 160px)",
-              overflow: "hidden",
-            }}
-          >
+        <Container className="py-2 py-md-4">
+<Card
+        className="chat-shell"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          // FIX: Subtract 190px to guarantee the bottom bar clears the mobile UI
+          height: "calc(100dvh - 190px)", 
+          maxHeight: "calc(100dvh - 190px)",
+          overflow: "hidden",
+        }}
+      >
             <Row
               className="g-0 chat-body-row"
               style={{

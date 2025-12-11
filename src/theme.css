@@ -1621,3 +1621,24 @@ p {
   background: #e5e7eb;
   color: #111;
 }
+
+/* =========================
+   Fix for Reaction Menu Overflow
+========================= */
+
+/* For messages received (Actions on the Right):
+   Anchor the menu to the RIGHT so it grows leftwards (back onto the screen) */
+   .actions-right .reaction-picker {
+    right: 0;
+    left: auto;
+    /* Optional: nudge it slightly so it doesn't cover the button exactly */
+    transform: translateY(-8px); 
+  }
+  
+  /* For messages sent (Actions on the Left):
+     Anchor the menu to the LEFT so it grows rightwards (back onto the screen) */
+  .actions-left .reaction-picker {
+    left: 0;
+    right: auto;
+    transform: translateY(-8px);
+  }
