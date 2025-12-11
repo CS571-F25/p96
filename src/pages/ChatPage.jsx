@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback} from "react";
 import {
   Container,
   Row,
@@ -22,7 +22,8 @@ import {
   getDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { db } from "../firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../firebase";
 
 const ROOMS = [
   {
@@ -61,7 +62,6 @@ function computeAge(birthdayStr) {
 
 export default function ChatPage() {
   const [user, setUser] = useState(null);
-  const [userProfiles, setUserProfiles] = useState({});
   const [authLoading, setAuthLoading] = useState(true);
 
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -76,28 +76,19 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  const messagesContainerRef = useRef(null);
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const [attachmentPreviewUrl, setAttachmentPreviewUrl] = useState(null);
 
-  // ===== Auth + profile (for 21+ access) =====
-  useEffect(() => {
-    const usersRef = collection(db, "users");
-    const unsub = onSnapshot(
-      usersRef,
-      (snap) => {
-        const next = {};
-        snap.forEach((docSnap) => {
-          next[docSnap.id] = docSnap.data();
-        });
-        setUserProfiles(next);
-      },
-      (err) => {
-        console.error("[Chat] users onSnapshot error:", err);
-      }
-    );
-  
-    return unsub;
+  const messagesContainerRef = useRef(null);
+  const fileInputRef = useRef(null);
+  // Helper to scroll to bottom of the messages container
+const scrollToBottom = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
   }, []);
 
+  // ===== Auth + 21+ profile =====
   useEffect(() => {
     const auth = getAuth();
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -166,7 +157,6 @@ export default function ChatPage() {
           setMessages(list);
           setMessagesLoading(false);
 
-          // update "lastMessages" cache for previews
           if (list.length > 0) {
             const last = list[list.length - 1];
             setLastMessages((prev) => ({
@@ -190,22 +180,42 @@ export default function ChatPage() {
     }
   }, [activeRoomId]);
 
-// Always keep the view pinned to the bottom of the current room
-// (runs after every render, but does not affect scrolling up
-// unless new messages render).
+// Always scroll to bottom when messages change or room changes
 useEffect(() => {
-    const el = messagesContainerRef.current;
-    if (!el) return;
     if (!messages.length) return;
-  
-    el.scrollTop = el.scrollHeight;
-  });
+    scrollToBottom();
+  }, [messages.length, activeRoomId, scrollToBottom]);
 
-  
-  // ===== Sending a message =====
+  // ===== Attachment handling =====
+  const handleAttachmentClick = () => {
+    if (!fileInputRef.current) return;
+    fileInputRef.current.click();
+  };
+
+  const handleAttachmentChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setAttachmentFile(null);
+      setAttachmentPreviewUrl(null);
+      return;
+    }
+
+    setAttachmentFile(file);
+
+    if (file.type.startsWith("image/")) {
+      const localUrl = URL.createObjectURL(file);
+      setAttachmentPreviewUrl(localUrl);
+    } else {
+      setAttachmentPreviewUrl(null);
+    }
+  };
+
+  // ===== Sending a message (with optional attachment) =====
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!user || !newMessage.trim() || !canUseActiveRoom) return;
+    if (!user || (!newMessage.trim() && !attachmentFile) || !canUseActiveRoom) {
+      return;
+    }
 
     setSending(true);
     setError("");
@@ -214,17 +224,42 @@ useEffect(() => {
       const displayName =
         user.displayName || user.email?.split("@")[0] || "AreaRED Member";
 
+      let attachmentData = null;
+
+      if (attachmentFile) {
+        const safeName = attachmentFile.name.replace(/[^\w.\-]/g, "_");
+        const path = `chatAttachments/${activeRoomId}/${user.uid}/${Date.now()}-${safeName}`;
+        const storageRef = ref(storage, path);
+
+        const uploadSnap = await uploadBytes(storageRef, attachmentFile);
+        const downloadURL = await getDownloadURL(uploadSnap.ref);
+
+        attachmentData = {
+          url: downloadURL,
+          name: attachmentFile.name,
+          type: attachmentFile.type,
+          size: attachmentFile.size,
+          storagePath: uploadSnap.ref.fullPath,
+        };
+      }
+
       await addDoc(collection(db, "rooms", activeRoomId, "messages"), {
         text: newMessage.trim(),
         uid: user.uid,
         displayName,
         photoURL: user.photoURL || null,
+        attachment: attachmentData,
         createdAt: serverTimestamp(),
       });
 
       setNewMessage("");
+      setAttachmentFile(null);
+      setAttachmentPreviewUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (err) {
-      console.error("[Chat] Firestore addDoc error:", err);
+      console.error("[Chat] Firestore addDoc / upload error:", err);
       setError("Could not send message. Please try again.");
     } finally {
       setSending(false);
@@ -422,65 +457,130 @@ useEffect(() => {
                   No messages yet. Start the conversation!
                 </div>
               ) : (
-messages.map((msg) => {
-  const isMe = msg.uid === user.uid;
-  const created =
-    msg.createdAt?.toDate?.() || msg.createdAt || null;
-  const timeStr = created
-    ? created.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "";
+                messages.map((msg) => {
+                  const isMe = msg.uid === user.uid;
+                  const created =
+                    msg.createdAt?.toDate?.() || msg.createdAt || null;
+                  const timeStr = created
+                    ? created.toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })
+                    : "";
 
-  // NEW: pull live profile for this uid
-  const profile = userProfiles[msg.uid];
+                  // Name & avatar logic:
+                  const nameToShow = isMe
+                    ? user.displayName || user.email || "AreaRED Member"
+                    : msg.displayName || "AreaRED Member";
 
-  const nameFromProfile = profile
-    ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() ||
-      profile.displayName
-    : null;
+                  const avatarURL = isMe
+                    ? user.photoURL || null
+                    : msg.photoURL || null;
 
-  const nameToShow =
-    nameFromProfile ||
-    msg.displayName || // old stored name on message
-    "AreaRED Member";
+                  const initials =
+                    (nameToShow && nameToShow.trim()[0]?.toUpperCase()) ||
+                    msg.uid?.[0]?.toUpperCase() ||
+                    "?";
 
-  const avatarURL = profile?.photoURL || msg.photoURL || null;
+                  const attachment = msg.attachment || null;
+                  const isImage =
+                    attachment?.type?.startsWith("image/") ?? false;
 
-  const initials =
-    (nameToShow && nameToShow.trim()[0]?.toUpperCase()) ||
-    msg.uid?.[0]?.toUpperCase() ||
-    "?";
+                  return (
+                    <div
+                      key={msg.id}
+                      className={
+                        "chat-message" + (isMe ? " chat-message-me" : "")
+                      }
+                    >
+                      <div className="chat-avatar">
+                        {avatarURL ? (
+                          <img src={avatarURL} alt={`${nameToShow} avatar`} />
+                        ) : (
+                          <div className="chat-avatar-fallback">
+                            {initials}
+                          </div>
+                        )}
+                      </div>
 
-  return (
-    <div
-      key={msg.id}
-      className={
-        "chat-message" + (isMe ? " chat-message-me" : "")
-      }
-    >
-      <div className="chat-avatar">
-        {avatarURL ? (
-          <img src={avatarURL} alt={`${nameToShow} avatar`} />
-        ) : (
-          <div className="chat-avatar-fallback">
-            {initials}
-          </div>
-        )}
-      </div>
-      <div className="chat-bubble-wrap">
-        <div className="chat-meta">
-          <span className="chat-name">{nameToShow}</span>
-          {timeStr && <span className="chat-time">{timeStr}</span>}
-        </div>
-        <div className="chat-bubble">{msg.text}</div>
-      </div>
-    </div>
-  );
-})
+                      <div className="chat-bubble-wrap">
+                        <div className="chat-meta">
+                          <span className="chat-name">{nameToShow}</span>
+                          {timeStr && (
+                            <span className="chat-time">{timeStr}</span>
+                          )}
+                        </div>
+
+                        {/* TEXT BUBBLE (only if text exists) */}
+                        {msg.text && msg.text.trim() && (
+                          <div className="chat-bubble">{msg.text}</div>
+                        )}
+
+                        {/* IMAGE ATTACHMENT */}
+                        {attachment && isImage && (
+                          <div className="chat-image-bubble">
+                            <a
+                              href={attachment.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+<img
+  src={attachment.url}
+  alt={attachment.name || "Attachment"}
+  className="chat-attachment-image"
+  onLoad={scrollToBottom}
+/>
+                            </a>
+                          </div>
+                        )}
+
+                        {/* NON-IMAGE FILE ATTACHMENT */}
+                        {attachment && !isImage && (
+                          <div className="chat-file-bubble">
+                            <a
+                              href={attachment.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              📎 {attachment.name || "Download attachment"}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
+
+            {/* Optional small local preview of image attachment */}
+            {attachmentFile && (
+              <div
+                style={{
+                  padding: "4px 20px 0",
+                  borderTop: "1px solid #e5e7eb",
+                  background: "#f9fafb",
+                  fontSize: "0.8rem",
+                }}
+              >
+                <span className="me-2">Attached:</span>
+                <strong>{attachmentFile.name}</strong>
+                {attachmentPreviewUrl && (
+                  <div style={{ marginTop: 4 }}>
+                    <img
+                      src={attachmentPreviewUrl}
+                      alt="Attachment preview"
+                      style={{
+                        maxWidth: "160px",
+                        maxHeight: "100px",
+                        borderRadius: 8,
+                        display: "block",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Input bar pinned to bottom of card */}
             <div
@@ -494,6 +594,30 @@ messages.map((msg) => {
             >
               {canUseActiveRoom ? (
                 <Form onSubmit={handleSend} className="w-100 d-flex gap-2">
+                  {/* Hidden file input */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="d-none"
+                    onChange={handleAttachmentChange}
+                  />
+                  {/* Attachment button */}
+                  <Button
+                    type="button"
+                    variant="light"
+                    onClick={handleAttachmentClick}
+                    disabled={sending || messagesLoading}
+                    style={{
+                      borderRadius: "999px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      paddingInline: "0.6rem",
+                    }}
+                  >
+                    📎
+                  </Button>
+                  {/* Message input */}
                   <Form.Control
                     as="textarea"
                     rows={1}
@@ -502,11 +626,16 @@ messages.map((msg) => {
                     onChange={(e) => setNewMessage(e.target.value)}
                     disabled={sending || messagesLoading}
                     aria-label="Chat message"
+                    style={{
+                      resize: "none",
+                    }}
                   />
                   <Button
                     type="submit"
                     disabled={
-                      sending || messagesLoading || !newMessage.trim()
+                      sending ||
+                      messagesLoading ||
+                      (!newMessage.trim() && !attachmentFile)
                     }
                   >
                     {sending ? "Sending…" : "Send"}
