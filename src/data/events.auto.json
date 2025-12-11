@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215116calendarwiscedu",
-    "title": "Women's Basketball: UW vs. San Diego",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-12-10",
-    "time": "5:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215128calendarwiscedu",
     "title": "Wrestling: UW vs. Lock Haven and Utah Valley",
     "type": "Game",
@@ -217,6 +206,17 @@
     "time": "1:00 PM",
     "venue": "The Kohl Center",
     "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213486calendarwiscedu",
+    "title": "Women's Hockey: UW vs. Bemidji State",
+    "type": "Game",
+    "sport": "Hockey",
+    "date": "2026-01-24",
+    "time": "7:00 AM",
+    "venue": "LaBahn Arena",
+    "notes": "Tickets sold out.",
     "source": "UW Athletics"
   }
 ]
