@@ -21,7 +21,6 @@ import {
   doc,
   getDoc,
   serverTimestamp,
-  limit,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -39,7 +38,7 @@ const ROOMS = [
     requires21: false,
   },
   {
-    id: "twentyone", // match your original Firestore path
+    id: "twentyone",
     name: "21+ Lounge",
     description: "Late-night & social chat (21+ only).",
     requires21: true,
@@ -62,6 +61,7 @@ function computeAge(birthdayStr) {
 
 export default function ChatPage() {
   const [user, setUser] = useState(null);
+  const [userProfiles, setUserProfiles] = useState({});
   const [authLoading, setAuthLoading] = useState(true);
 
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -70,6 +70,7 @@ export default function ChatPage() {
   const [activeRoomId, setActiveRoomId] = useState("general");
 
   const [messages, setMessages] = useState([]);
+  const [lastMessages, setLastMessages] = useState({}); // roomId -> last msg
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -78,6 +79,25 @@ export default function ChatPage() {
   const messagesContainerRef = useRef(null);
 
   // ===== Auth + profile (for 21+ access) =====
+  useEffect(() => {
+    const usersRef = collection(db, "users");
+    const unsub = onSnapshot(
+      usersRef,
+      (snap) => {
+        const next = {};
+        snap.forEach((docSnap) => {
+          next[docSnap.id] = docSnap.data();
+        });
+        setUserProfiles(next);
+      },
+      (err) => {
+        console.error("[Chat] users onSnapshot error:", err);
+      }
+    );
+  
+    return unsub;
+  }, []);
+
   useEffect(() => {
     const auth = getAuth();
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -127,46 +147,61 @@ export default function ChatPage() {
   const canUseActiveRoom =
     !activeRoom?.requires21 || (activeRoom?.requires21 && is21Plus);
 
-  // ===== Subscribe to messages for CURRENT room (old behavior) =====
+  // ===== Subscribe to messages for the current room (rooms/{roomId}/messages) =====
   useEffect(() => {
     setMessagesLoading(true);
     setError("");
 
-    // rooms/{roomId}/messages, ordered by createdAt
-    const msgsRef = collection(db, "rooms", activeRoomId, "messages");
-    const q = query(msgsRef, orderBy("createdAt", "asc"), limit(100));
+    try {
+      const msgsRef = collection(db, "rooms", activeRoomId, "messages");
+      const q = query(msgsRef, orderBy("createdAt", "asc"));
 
-    const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        const list = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-        setMessages(list);
-        setMessagesLoading(false);
-      },
-      (err) => {
-        console.error(
-          "[Chat] Firestore onSnapshot error – check collection name & security rules:",
-          err
-        );
-        setError("Could not load messages.");
-        setMessages([]);
-        setMessagesLoading(false);
-      }
-    );
+      const unsub = onSnapshot(
+        q,
+        (snapshot) => {
+          const list = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }));
+          setMessages(list);
+          setMessagesLoading(false);
 
-    return unsub;
+          // update "lastMessages" cache for previews
+          if (list.length > 0) {
+            const last = list[list.length - 1];
+            setLastMessages((prev) => ({
+              ...prev,
+              [activeRoomId]: last,
+            }));
+          }
+        },
+        (err) => {
+          console.error("[Chat] onSnapshot error:", err);
+          setError("Could not load messages.");
+          setMessagesLoading(false);
+        }
+      );
+
+      return unsub;
+    } catch (err) {
+      console.error("[Chat] Firestore query setup error:", err);
+      setError("Could not load messages.");
+      setMessagesLoading(false);
+    }
   }, [activeRoomId]);
 
-  // Auto-scroll to bottom INSIDE the messages container
-  useEffect(() => {
+// Always keep the view pinned to the bottom of the current room
+// (runs after every render, but does not affect scrolling up
+// unless new messages render).
+useEffect(() => {
     const el = messagesContainerRef.current;
     if (!el) return;
+    if (!messages.length) return;
+  
     el.scrollTop = el.scrollHeight;
-  }, [messages.length, activeRoomId]);
+  });
 
+  
   // ===== Sending a message =====
   const handleSend = async (e) => {
     e.preventDefault();
@@ -183,6 +218,7 @@ export default function ChatPage() {
         text: newMessage.trim(),
         uid: user.uid,
         displayName,
+        photoURL: user.photoURL || null,
         createdAt: serverTimestamp(),
       });
 
@@ -221,35 +257,31 @@ export default function ChatPage() {
     );
   }
 
-  // compute preview + time for each room using current room’s messages only
-  const getRoomPreview = (roomId) => {
-    if (roomId === activeRoomId && messages.length > 0) {
-      const last = messages[messages.length - 1];
-      return last.text || activeRoom?.description || "";
-    }
-    return ROOMS.find((r) => r.id === roomId)?.description || "";
-  };
-
-  const getRoomTime = (roomId) => {
-    if (roomId === activeRoomId && messages.length > 0) {
-      const last = messages[messages.length - 1];
-      const created =
-        last.createdAt?.toDate?.() || last.createdAt || null;
-      if (!created) return "";
-      return created.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      });
-    }
-    return "";
-  };
-
   return (
     <Container className="py-4">
-      <Card className="chat-shell">
-        <Row className="g-0 chat-body-row">
+      {/* Card has fixed height and flex column */}
+      <Card
+        className="chat-shell"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "72vh",
+          maxHeight: "72vh",
+          overflow: "hidden",
+        }}
+      >
+        {/* Row fills card height but doesn't grow it */}
+        <Row
+          className="g-0 chat-body-row"
+          style={{ flex: 1, minHeight: 0, overflow: "hidden" }}
+        >
           {/* LEFT: thread list */}
-          <Col md={4} lg={3} className="chat-sidebar">
+          <Col
+            md={4}
+            lg={3}
+            className="chat-sidebar"
+            style={{ display: "flex", flexDirection: "column", minHeight: 0 }}
+          >
             <div className="chat-sidebar-header">
               <h5 className="mb-0">Messages</h5>
               <span className="chat-sidebar-sub">
@@ -257,12 +289,17 @@ export default function ChatPage() {
               </span>
             </div>
 
-            <ListGroup variant="flush" className="chat-thread-list">
+            <ListGroup
+              variant="flush"
+              className="chat-thread-list"
+              style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
+            >
               {ROOMS.map((room) => {
                 const disabled = room.requires21 && !is21Plus;
                 const isActive = activeRoomId === room.id;
+                const preview = lastMessages[room.id];
 
-                let previewText = getRoomPreview(room.id);
+                let previewText = preview?.text || room.description;
                 if (previewText.length > 60) {
                   previewText = previewText.slice(0, 57) + "…";
                 }
@@ -274,7 +311,13 @@ export default function ChatPage() {
                   .slice(0, 2)
                   .toUpperCase();
 
-                const timeStr = getRoomTime(room.id);
+                const lastTime = preview?.createdAt?.toDate?.();
+                const timeStr = lastTime
+                  ? lastTime.toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })
+                  : "";
 
                 return (
                   <ListGroup.Item
@@ -319,7 +362,17 @@ export default function ChatPage() {
           </Col>
 
           {/* RIGHT: conversation view */}
-          <Col md={8} lg={9} className="chat-main">
+          <Col
+            md={8}
+            lg={9}
+            className="chat-main"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+              maxHeight: "100%",
+            }}
+          >
             <div className="chat-main-header">
               <div>
                 <h4 className="mb-0">{activeRoom?.name}</h4>
@@ -349,7 +402,16 @@ export default function ChatPage() {
             )}
 
             {/* Messages viewport (scrolls internally) */}
-            <div className="chat-messages" ref={messagesContainerRef}>
+            <div
+              className="chat-messages"
+              ref={messagesContainerRef}
+              style={{
+                flex: 1,
+                minHeight: 0,
+                maxHeight: "100%",
+                overflowY: "auto",
+              }}
+            >
               {messagesLoading ? (
                 <div className="chat-messages-empty">
                   <Spinner animation="border" size="sm" className="me-2" />
@@ -360,60 +422,76 @@ export default function ChatPage() {
                   No messages yet. Start the conversation!
                 </div>
               ) : (
-                messages.map((msg) => {
-                  const isMe = msg.uid === user.uid;
-                  const created =
-                    msg.createdAt?.toDate?.() || msg.createdAt || null;
-                  const timeStr = created
-                    ? created.toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })
-                    : "";
+messages.map((msg) => {
+  const isMe = msg.uid === user.uid;
+  const created =
+    msg.createdAt?.toDate?.() || msg.createdAt || null;
+  const timeStr = created
+    ? created.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "";
 
-                  const initials =
-                    msg.displayName?.trim()?.[0]?.toUpperCase() ||
-                    msg.uid?.[0]?.toUpperCase() ||
-                    "?";
+  // NEW: pull live profile for this uid
+  const profile = userProfiles[msg.uid];
 
-                  return (
-                    <div
-                      key={msg.id}
-                      className={
-                        "chat-message" + (isMe ? " chat-message-me" : "")
-                      }
-                    >
-                      <div className="chat-avatar">
-                        {msg.photoURL ? (
-                          <img
-                            src={msg.photoURL}
-                            alt={`${msg.displayName || "User"} avatar`}
-                          />
-                        ) : (
-                          <div className="chat-avatar-fallback">
-                            {initials}
-                          </div>
-                        )}
-                      </div>
-                      <div className="chat-bubble-wrap">
-                        <div className="chat-meta">
-                          <span className="chat-name">
-                            {msg.displayName || "AreaRED Member"}
-                          </span>
-                          {timeStr && (
-                            <span className="chat-time">{timeStr}</span>
-                          )}
-                        </div>
-                        <div className="chat-bubble">{msg.text}</div>
-                      </div>
-                    </div>
-                  );
-                })
+  const nameFromProfile = profile
+    ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() ||
+      profile.displayName
+    : null;
+
+  const nameToShow =
+    nameFromProfile ||
+    msg.displayName || // old stored name on message
+    "AreaRED Member";
+
+  const avatarURL = profile?.photoURL || msg.photoURL || null;
+
+  const initials =
+    (nameToShow && nameToShow.trim()[0]?.toUpperCase()) ||
+    msg.uid?.[0]?.toUpperCase() ||
+    "?";
+
+  return (
+    <div
+      key={msg.id}
+      className={
+        "chat-message" + (isMe ? " chat-message-me" : "")
+      }
+    >
+      <div className="chat-avatar">
+        {avatarURL ? (
+          <img src={avatarURL} alt={`${nameToShow} avatar`} />
+        ) : (
+          <div className="chat-avatar-fallback">
+            {initials}
+          </div>
+        )}
+      </div>
+      <div className="chat-bubble-wrap">
+        <div className="chat-meta">
+          <span className="chat-name">{nameToShow}</span>
+          {timeStr && <span className="chat-time">{timeStr}</span>}
+        </div>
+        <div className="chat-bubble">{msg.text}</div>
+      </div>
+    </div>
+  );
+})
               )}
             </div>
 
             {/* Input bar pinned to bottom of card */}
-            <div className="chat-input-bar">
+            <div
+              className="chat-input-bar"
+              style={{
+                flexShrink: 0,
+                borderTop: "1px solid #e1e3e8",
+                padding: "10px 20px",
+                background: "#fff",
+              }}
+            >
               {canUseActiveRoom ? (
                 <Form onSubmit={handleSend} className="w-100 d-flex gap-2">
                   <Form.Control
