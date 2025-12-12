@@ -85,6 +85,7 @@ export default function ChatPage() {
 
   const messagesContainerRef = useRef(null);
   const fileInputRef = useRef(null);
+  
 
   // 1. REACTION LOGIC
   const handleReaction = async (msgId, emoji) => {
@@ -275,16 +276,22 @@ const scrollToBottom = () => {
   };
   
   // Scroll when messages change or when you switch rooms
-  useEffect(() => {
-    if (!messages.length) return;
-  
-    // tiny delay so layout is applied before we measure scrollHeight
+// Scroll when messages change or when you switch rooms
+// Scroll when messages change, room changes, or mostly importantly: WHEN LOADING FINISHES
+useEffect(() => {
+    // If we are currently loading, do nothing yet. Wait for the data.
+    if (messagesLoading) return;
+    
+    // 1. Immediate scroll
+    scrollToBottom();
+
+    // 2. Delayed scroll to ensure layout is done (fixes the "back button" issue)
     const id = setTimeout(() => {
       scrollToBottom();
-    }, 0);
-  
+    }, 150); // Slight bump to 150ms to be safe
+
     return () => clearTimeout(id);
-  }, [messages, activeRoomId]);
+  }, [messages, activeRoomId, sending, messagesLoading]); // <--- Added messagesLoading
   
   // After images load, scroll again so you're truly at the bottom
   useEffect(() => {
@@ -720,27 +727,18 @@ const scrollToBottom = () => {
                                   </div>
                                 )}
     
-                                {/* Image Attachment */}
-                                {attachment && isImage && (
-                                  <div className="chat-image-bubble" style={{ position: "relative" }}>
-                                    <img
-                                      src={attachment.url}
-                                      alt="attachment"
-                                      onClick={() => window.open(attachment.url, "_blank")}
-                                    />
-                                    {/* Download Button Overlay */}
-                                    <button
-                                      className="download-overlay-btn"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownload(attachment.url, attachment.name);
-                                      }}
-                                      title="Download Image"
-                                    >
-                                      ⬇
-                                    </button>
-                                  </div>
-                                )}
+{/* Image Attachment */}
+{attachment && isImage && (
+                              <div className="chat-image-bubble">
+                                <img
+                                  src={attachment.url}
+                                  alt="attachment"
+                                  // Keep this so the chat still scrolls down when images load!
+                                  onLoad={scrollToBottom}
+                                  // Removed onClick and Download Button to fix lag
+                                />
+                              </div>
+                            )}
     
                                 {/* File Attachment */}
                                 {attachment && !isImage && (

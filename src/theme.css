@@ -1302,10 +1302,9 @@ p {
   transition: transform 0.2s ease;
 }
 
-/* Make the images feel tactile */
 .chat-image-bubble:hover {
-  transform: scale(1.02);
-  cursor: pointer;
+  transform: none;
+  cursor: default;
 }
 
 .chat-image-bubble img,
@@ -1486,26 +1485,7 @@ p {
   transform: scale(1.1);
 }
 
-/* The popup menu of emojis */
-.reaction-picker {
-  display: none; /* Hidden by default */
-  position: absolute;
-  bottom: 100%;
-  background: #fff;
-  border-radius: 999px;
-  padding: 4px 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  gap: 6px;
-  z-index: 20;
-  white-space: nowrap;
-}
 
-/* Show picker on Hover OR Click (Focus) */
-.add-reaction-btn:hover + .reaction-picker,
-.add-reaction-btn:focus + .reaction-picker, /* <--- This makes click work */
-.reaction-picker:hover {
-  display: flex;
-}
 
 .emoji-opt {
   cursor: pointer;
@@ -1623,22 +1603,78 @@ p {
 }
 
 /* =========================
-   Fix for Reaction Menu Overflow
+   Reaction Menu: Anchored to Bubble Bottom
 ========================= */
 
-/* For messages received (Actions on the Right):
-   Anchor the menu to the RIGHT so it grows leftwards (back onto the screen) */
-   .actions-right .reaction-picker {
-    right: 0;
-    left: auto;
-    /* Optional: nudge it slightly so it doesn't cover the button exactly */
-    transform: translateY(-8px); 
-  }
+/* 1. Reset & Position relative to the Content Group (the bubble wrapper) */
+.message-actions .reaction-picker {
+  /* Reset previous positioning */
+  top: auto;
+  bottom: auto;
+  left: auto;
+  right: auto;
+  transform: none;
+
+  /* NEW POSITION: 
+     100% from top = effectively the bottom of the message bubble.
+     We add a little margin to clear the bubble's tail/corner. */
+  top: 100%;
+  margin-top: 8px; 
+
+  /* Visuals */
+  position: absolute;
+  background: #fff;
+  border-radius: 30px;
+  padding: 6px 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15); /* Stronger shadow to float over existing items */
+  z-index: 200; /* Float ON TOP of existing reactions */
   
-  /* For messages sent (Actions on the Left):
-     Anchor the menu to the LEFT so it grows rightwards (back onto the screen) */
-  .actions-left .reaction-picker {
-    left: 0;
-    right: auto;
-    transform: translateY(-8px);
-  }
+  /* Layout */
+  display: none;
+  flex-wrap: nowrap;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* 2. ALIGNMENT LOGIC */
+
+/* FOR THEM (Message on Left): 
+   Align the menu to the LEFT edge of the content group.
+   This puts it right under the start of their text. */
+.actions-right .reaction-picker {
+  left: 0;
+}
+
+/* FOR ME (Message on Right): 
+   Align the menu to the RIGHT edge of the content group.
+   This puts it right under the end of my text. */
+.actions-left .reaction-picker {
+  right: 0;
+}
+
+/* 3. INVISIBLE BRIDGES (Crucial for Mouse movement) */
+
+/* Bridge A: Connects the Smiley Button (Side) to the Menu (Bottom) 
+   We make a large invisible block that covers the diagonal gap. */
+.reaction-picker::before {
+  content: '';
+  position: absolute;
+  bottom: 100%; /* Extends UP from the menu */
+  height: 40px; /* Tall enough to reach the smiley button */
+  width: 140%;  /* Wide enough to catch diagonal mouse movement */
+  left: -20%;   /* Center it horizontally */
+  background: transparent;
+}
+
+/* 4. ANIMATION */
+.message-actions:hover .reaction-picker,
+.add-reaction-btn:focus + .reaction-picker,
+.reaction-picker:hover {
+  display: flex;
+  animation: slideDownFade 0.15s ease-out;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
