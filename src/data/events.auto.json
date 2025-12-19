@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215128calendarwiscedu",
-    "title": "Wrestling: UW vs. Lock Haven and Utah Valley",
-    "type": "Game",
-    "sport": "Wrestling",
-    "date": "2025-12-18",
-    "time": "11:00 AM",
-    "venue": "Field House",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215129calendarwiscedu",
     "title": "Wrestling: UW vs. Arizona State",
     "type": "Game",
@@ -204,6 +193,17 @@
     "sport": "Hockey",
     "date": "2026-01-23",
     "time": "1:00 PM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213504calendarwiscedu",
+    "title": "Men's Hockey: UW vs. Penn State",
+    "type": "Game",
+    "sport": "Hockey",
+    "date": "2026-01-24",
+    "time": "1:30 PM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
