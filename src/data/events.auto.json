@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215129calendarwiscedu",
-    "title": "Wrestling: UW vs. Arizona State",
-    "type": "Game",
-    "sport": "Wrestling",
-    "date": "2025-12-20",
-    "time": "7:00 AM",
-    "venue": "Field House",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215117calendarwiscedu",
     "title": "Women's Basketball: UW vs. IU Indianapolis",
     "type": "Game",
@@ -215,6 +204,17 @@
     "sport": "Hockey",
     "date": "2026-01-24",
     "time": "7:00 AM",
+    "venue": "LaBahn Arena",
+    "notes": "Tickets sold out.",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213487calendarwiscedu",
+    "title": "Women's Hockey: UW vs. Bemidji State",
+    "type": "Game",
+    "sport": "Hockey",
+    "date": "2026-01-25",
+    "time": "5:00 AM",
     "venue": "LaBahn Arena",
     "notes": "Tickets sold out.",
     "source": "UW Athletics"
