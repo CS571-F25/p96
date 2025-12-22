@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215117calendarwiscedu",
-    "title": "Women's Basketball: UW vs. IU Indianapolis",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2025-12-21",
-    "time": "5:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215099calendarwiscedu",
     "title": "Men's Basketball: UW vs. Central Michigan",
     "type": "Game",
@@ -217,6 +206,17 @@
     "time": "5:00 AM",
     "venue": "LaBahn Arena",
     "notes": "Tickets sold out.",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215104calendarwiscedu",
+    "title": "Men's Basketball: UW vs. USC",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-01-25",
+    "time": "9:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
     "source": "UW Athletics"
   }
 ]
