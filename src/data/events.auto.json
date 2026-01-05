@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215118calendarwiscedu",
-    "title": "Women's Basketball: UW vs. Penn State",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2026-01-04",
-    "time": "9:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215102calendarwiscedu",
     "title": "Men's Basketball: UW vs. UCLA",
     "type": "Game",
@@ -217,6 +206,17 @@
     "time": "12:30 PM",
     "venue": "The Kohl Center",
     "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213467calendarwiscedu",
+    "title": "Men's and Women's Swimming and Diving: Badger Invitational",
+    "type": "Game",
+    "sport": "Swimming",
+    "date": "2026-02-05",
+    "time": "6:00 PM",
+    "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
+    "notes": "*Note: actual end time may vary.*",
     "source": "UW Athletics"
   }
 ]
