@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215102calendarwiscedu",
-    "title": "Men's Basketball: UW vs. UCLA",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2026-01-06",
-    "time": "2:00 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215119calendarwiscedu",
     "title": "Women's Basketball: UW vs. Purdue",
     "type": "Game",
@@ -217,6 +206,17 @@
     "time": "6:00 PM",
     "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
     "notes": "*Note: actual end time may vary.*",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213505calendarwiscedu",
+    "title": "Men's Hockey: UW vs. Notre Dame",
+    "type": "Game",
+    "sport": "Hockey",
+    "date": "2026-02-06",
+    "time": "1:00 PM",
+    "venue": "The Kohl Center",
+    "notes": "",
     "source": "UW Athletics"
   }
 ]
