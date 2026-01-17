@@ -1,27 +1,5 @@
 [
   {
-    "id": "uw-215131calendarwiscedu",
-    "title": "Wrestling: UW vs. Northwestern",
-    "type": "Game",
-    "sport": "Wrestling",
-    "date": "2026-01-15",
-    "time": "6:00 PM",
-    "venue": "Field House",
-    "notes": "*Note: actual end time may vary.*",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-213502calendarwiscedu",
-    "title": "Men's Hockey: UW vs. Michigan State",
-    "type": "Game",
-    "sport": "Hockey",
-    "date": "2026-01-16",
-    "time": "1:00 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215103calendarwiscedu",
     "title": "Men's Basketball: UW vs. Rutgers",
     "type": "Game",
@@ -217,6 +195,28 @@
     "time": "9:00 AM",
     "venue": "LaBahn Arena",
     "notes": "Tickets sold out.",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215123calendarwiscedu",
+    "title": "Women's Basketball: UW vs. Washington",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-02-08",
+    "time": "8:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215107calendarwiscedu",
+    "title": "Men's Basketball: UW vs. Michigan State",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-02-13",
+    "time": "1:00 PM",
+    "venue": "The Kohl Center",
+    "notes": "",
     "source": "UW Athletics"
   }
 ]
