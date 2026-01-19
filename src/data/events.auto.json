@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-215120calendarwiscedu",
-    "title": "Women's Basketball: UW vs. Oregon",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2026-01-18",
-    "time": "9:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215121calendarwiscedu",
     "title": "Women's Basketball: UW vs. Nebraska",
     "type": "Game",
@@ -217,6 +206,17 @@
     "time": "6:00 PM",
     "venue": "Field House",
     "notes": "*Note: actual end time may vary.*",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215124calendarwiscedu",
+    "title": "Women's Basketball: UW vs. Minnesota",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-02-15",
+    "time": "11:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
     "source": "UW Athletics"
   }
 ]
