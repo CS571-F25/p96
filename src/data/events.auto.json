@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-213503calendarwiscedu",
-    "title": "Men's Hockey: UW vs. Penn State",
-    "type": "Game",
-    "sport": "Hockey",
-    "date": "2026-01-23",
-    "time": "1:00 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213504calendarwiscedu",
     "title": "Men's Hockey: UW vs. Penn State",
     "type": "Game",
@@ -217,6 +206,17 @@
     "time": "1:00 PM",
     "venue": "The Kohl Center",
     "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213490calendarwiscedu",
+    "title": "Women's Hockey: UW vs. St. Cloud State",
+    "type": "Game",
+    "sport": "Hockey",
+    "date": "2026-02-21",
+    "time": "7:00 AM",
+    "venue": "LaBahn Arena",
+    "notes": "Tickets sold out.",
     "source": "UW Athletics"
   }
 ]
