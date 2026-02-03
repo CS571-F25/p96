@@ -33,17 +33,6 @@
     "source": "UW Athletics"
   },
   {
-    "id": "uw-215132calendarwiscedu",
-    "title": "Wrestling: UW vs. Inidana",
-    "type": "Game",
-    "sport": "Wrestling",
-    "date": "2026-02-06",
-    "time": "6:00 PM",
-    "venue": "Field House",
-    "notes": "*Note: actual end time may vary.*",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213468calendarwiscedu",
     "title": "Men's and Women's Swimming and Diving: Badger Invitational",
     "type": "Game",
@@ -74,6 +63,17 @@
     "time": "6:00 PM",
     "venue": "LaBahn Arena",
     "notes": "*Note: actual end time may vary.*",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215132calendarwiscedu",
+    "title": "Wrestling: UW vs. Inidana",
+    "type": "Game",
+    "sport": "Wrestling",
+    "date": "2026-02-07",
+    "time": "7:00 AM",
+    "venue": "Field House",
+    "notes": "",
     "source": "UW Athletics"
   },
   {
@@ -121,17 +121,6 @@
     "source": "UW Athletics"
   },
   {
-    "id": "uw-215133calendarwiscedu",
-    "title": "Wrestling: UW vs. Michigan",
-    "type": "Game",
-    "sport": "Wrestling",
-    "date": "2026-02-14",
-    "time": "6:00 PM",
-    "venue": "Field House",
-    "notes": "*Note: actual end time may vary.*",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-215124calendarwiscedu",
     "title": "Women's Basketball: UW vs. Minnesota",
     "type": "Game",
@@ -139,6 +128,17 @@
     "date": "2026-02-15",
     "time": "11:00 AM",
     "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215133calendarwiscedu",
+    "title": "Wrestling: UW vs. Michigan",
+    "type": "Game",
+    "sport": "Wrestling",
+    "date": "2026-02-15",
+    "time": "7:00 AM",
+    "venue": "Field House",
     "notes": "",
     "source": "UW Athletics"
   },
