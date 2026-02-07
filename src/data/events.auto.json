@@ -1,27 +1,5 @@
 [
   {
-    "id": "uw-213467calendarwiscedu",
-    "title": "Men's and Women's Swimming and Diving: Badger Invitational",
-    "type": "Game",
-    "sport": "Swimming",
-    "date": "2026-02-05",
-    "time": "6:00 PM",
-    "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
-    "notes": "*Note: actual end time may vary.*",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-213505calendarwiscedu",
-    "title": "Men's Hockey: UW vs. Notre Dame",
-    "type": "Game",
-    "sport": "Hockey",
-    "date": "2026-02-06",
-    "time": "1:00 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213468calendarwiscedu",
     "title": "Men's and Women's Swimming and Diving: Badger Invitational",
     "type": "Game",
@@ -217,6 +195,28 @@
     "time": "6:00 PM",
     "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
     "notes": "*Note: actual end time may vary.*",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-213472calendarwiscedu",
+    "title": "Men's Swimming and Diving: Big Ten Championships",
+    "type": "Game",
+    "sport": "Swimming",
+    "date": "2026-02-27",
+    "time": "6:00 PM",
+    "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
+    "notes": "*Note: actual end time may vary.*",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215125calendarwiscedu",
+    "title": "Women's Basketball: UW vs. Iowa",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-03-01",
+    "time": "8:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
     "source": "UW Athletics"
   }
 ]
