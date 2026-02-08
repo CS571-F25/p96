@@ -1,27 +1,5 @@
 [
   {
-    "id": "uw-213468calendarwiscedu",
-    "title": "Men's and Women's Swimming and Diving: Badger Invitational",
-    "type": "Game",
-    "sport": "Swimming",
-    "date": "2026-02-06",
-    "time": "6:00 PM",
-    "venue": "Soderholm Family Aquatic Center, Nicholas Recreation Center",
-    "notes": "*Note: actual end time may vary.*",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-213506calendarwiscedu",
-    "title": "Men's Hockey: UW vs. Notre Dame",
-    "type": "Game",
-    "sport": "Hockey",
-    "date": "2026-02-07",
-    "time": "1:00 PM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213489calendarwiscedu",
     "title": "Women's Hockey: UW vs. Ohio State",
     "type": "Game",
@@ -30,28 +8,6 @@
     "time": "6:00 PM",
     "venue": "LaBahn Arena",
     "notes": "*Note: actual end time may vary.*",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-215132calendarwiscedu",
-    "title": "Wrestling: UW vs. Inidana",
-    "type": "Game",
-    "sport": "Wrestling",
-    "date": "2026-02-07",
-    "time": "7:00 AM",
-    "venue": "Field House",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-213488calendarwiscedu",
-    "title": "Women's Hockey: UW vs. Ohio State",
-    "type": "Game",
-    "sport": "Hockey",
-    "date": "2026-02-07",
-    "time": "9:00 AM",
-    "venue": "LaBahn Arena",
-    "notes": "Tickets sold out.",
     "source": "UW Athletics"
   },
   {
@@ -215,6 +171,17 @@
     "sport": "Basketball",
     "date": "2026-03-01",
     "time": "8:00 AM",
+    "venue": "The Kohl Center",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-215109calendarwiscedu",
+    "title": "Men's Basketball: UW vs. Maryland",
+    "type": "Game",
+    "sport": "Basketball",
+    "date": "2026-03-04",
+    "time": "1:00 PM",
     "venue": "The Kohl Center",
     "notes": "",
     "source": "UW Athletics"
