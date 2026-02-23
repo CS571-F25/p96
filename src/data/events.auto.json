@@ -1,27 +1,5 @@
 [
   {
-    "id": "uw-213491calendarwiscedu",
-    "title": "Women's Hockey: UW vs. St. Cloud State",
-    "type": "Game",
-    "sport": "Hockey",
-    "date": "2026-02-22",
-    "time": "5:00 AM",
-    "venue": "LaBahn Arena",
-    "notes": "Tickets sold out.",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-215108calendarwiscedu",
-    "title": "Men's Basketball: UW vs. Iowa",
-    "type": "Game",
-    "sport": "Basketball",
-    "date": "2026-02-22",
-    "time": "9:00 AM",
-    "venue": "The Kohl Center",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-213469calendarwiscedu",
     "title": "Men's Swimming and Diving: Big Ten Championships",
     "type": "Game",
