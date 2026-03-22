@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-219181calendarwiscedu",
-    "title": "FGLI Volleyball Game",
-    "type": "Game",
-    "sport": "Volleyball",
-    "date": "2026-03-21",
-    "time": "7:00 AM",
-    "venue": "Volleyball Courts 1 & 2, Nicholas Recreation Center",
-    "notes": "Join us for a FGLI Volleyball Day, March 21st from 12pm - 2pm @ The Nicholas Recreation Center!",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-220455calendarwiscedu",
     "title": "Freshman Rock Climbing",
     "type": "Game",
