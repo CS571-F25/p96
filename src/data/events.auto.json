@@ -1,5 +1,49 @@
 [
   {
+    "id": "uw-220750calendarwiscedu",
+    "title": "Women’s Tennis: UW vs. Minnesota",
+    "type": "Game",
+    "sport": "Tennis",
+    "date": "2026-04-04",
+    "time": "7:00 AM",
+    "venue": "Nielsen Tennis Stadium",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220753calendarwiscedu",
+    "title": "Softball: UW vs. Loyola Chicago",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-08",
+    "time": "12:00 PM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220754calendarwiscedu",
+    "title": "Softball: UW vs. Nebraska",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-10",
+    "time": "2:00 PM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220755calendarwiscedu",
+    "title": "Softball: UW vs. Nebraska",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-11",
+    "time": "7:00 AM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
     "id": "uw-220455calendarwiscedu",
     "title": "Freshman Rock Climbing",
     "type": "Game",
@@ -8,6 +52,138 @@
     "time": "5:00 AM",
     "venue": "Bakke Recreation &amp; Wellbeing Center",
     "notes": "Rock-climbing and Bagels at the BAKKE with UW Hillel!. Join UW Hillel Freshman for rock-climbing and free bagels Sunday, April 12th at 10 AM!",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220756calendarwiscedu",
+    "title": "Softball: UW vs. Nebraska",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-12",
+    "time": "7:00 AM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220757calendarwiscedu",
+    "title": "Softball: UW vs. St. Thomas (doubleheader)",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-15",
+    "time": "10:00 AM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220751calendarwiscedu",
+    "title": "Women’s Tennis: UW vs. Nebraska",
+    "type": "Game",
+    "sport": "Tennis",
+    "date": "2026-04-17",
+    "time": "1:00 PM",
+    "venue": "Nielsen Tennis Stadium",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220748calendarwiscedu",
+    "title": "Men's Tennis: UW vs. Ohio State",
+    "type": "Game",
+    "sport": "Tennis",
+    "date": "2026-04-17",
+    "time": "10:00 AM",
+    "venue": "Nielsen Tennis Stadium",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220758calendarwiscedu",
+    "title": "Softball: UW vs. Michigan",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-17",
+    "time": "12:00 PM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220759calendarwiscedu",
+    "title": "Softball: UW vs. Michigan",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-18",
+    "time": "7:00 AM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220749calendarwiscedu",
+    "title": "Men's Tennis: UW vs. Penn State",
+    "type": "Game",
+    "sport": "Tennis",
+    "date": "2026-04-19",
+    "time": "5:30 AM",
+    "venue": "Nielsen Tennis Stadium",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220760calendarwiscedu",
+    "title": "Softball: UW vs. Michigan",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-04-19",
+    "time": "7:00 AM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220752calendarwiscedu",
+    "title": "Women’s Tennis: UW vs. Iowa",
+    "type": "Game",
+    "sport": "Tennis",
+    "date": "2026-04-19",
+    "time": "8:00 AM",
+    "venue": "Nielsen Tennis Stadium",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220761calendarwiscedu",
+    "title": "Softball: UW vs. Rutgers",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-05-01",
+    "time": "12:00 PM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220762calendarwiscedu",
+    "title": "Softball: UW vs. Rutgers",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-05-02",
+    "time": "7:00 AM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-220763calendarwiscedu",
+    "title": "Softball: UW vs. Rutgers",
+    "type": "Game",
+    "sport": "Softball",
+    "date": "2026-05-03",
+    "time": "7:00 AM",
+    "venue": "Goodman Softball Complex",
+    "notes": "",
     "source": "UW Athletics"
   }
 ]
