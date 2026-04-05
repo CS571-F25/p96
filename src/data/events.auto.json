@@ -1,16 +1,5 @@
 [
   {
-    "id": "uw-220750calendarwiscedu",
-    "title": "Women’s Tennis: UW vs. Minnesota",
-    "type": "Game",
-    "sport": "Tennis",
-    "date": "2026-04-04",
-    "time": "7:00 AM",
-    "venue": "Nielsen Tennis Stadium",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-220753calendarwiscedu",
     "title": "Softball: UW vs. Loyola Chicago",
     "type": "Game",
@@ -184,6 +173,17 @@
     "time": "7:00 AM",
     "venue": "Goodman Softball Complex",
     "notes": "",
+    "source": "UW Athletics"
+  },
+  {
+    "id": "uw-219491calendarwiscedu",
+    "title": "Football: UW vs Michigan State",
+    "type": "Game",
+    "sport": "Football",
+    "date": "2026-10-02",
+    "time": "7:00 PM",
+    "venue": "Camp Randall Stadium",
+    "notes": "*Note: actual end time may vary.*",
     "source": "UW Athletics"
   }
 ]
