@@ -1,27 +1,5 @@
 [
   {
-    "id": "uw-220455calendarwiscedu",
-    "title": "Freshman Rock Climbing",
-    "type": "Game",
-    "sport": "Other",
-    "date": "2026-04-12",
-    "time": "5:00 AM",
-    "venue": "Bakke Recreation &amp; Wellbeing Center",
-    "notes": "Rock-climbing and Bagels at the BAKKE with UW Hillel!. Join UW Hillel Freshman for rock-climbing and free bagels Sunday, April 12th at 10 AM!",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-220756calendarwiscedu",
-    "title": "Softball: UW vs. Nebraska",
-    "type": "Game",
-    "sport": "Softball",
-    "date": "2026-04-12",
-    "time": "7:00 AM",
-    "venue": "Goodman Softball Complex",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-220757calendarwiscedu",
     "title": "Softball: UW vs. St. Thomas (doubleheader)",
     "type": "Game",
