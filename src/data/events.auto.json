@@ -1,38 +1,5 @@
 [
   {
-    "id": "uw-220749calendarwiscedu",
-    "title": "Men's Tennis: UW vs. Penn State",
-    "type": "Game",
-    "sport": "Tennis",
-    "date": "2026-04-19",
-    "time": "5:30 AM",
-    "venue": "Nielsen Tennis Stadium",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-220760calendarwiscedu",
-    "title": "Softball: UW vs. Michigan",
-    "type": "Game",
-    "sport": "Softball",
-    "date": "2026-04-19",
-    "time": "7:00 AM",
-    "venue": "Goodman Softball Complex",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
-    "id": "uw-220752calendarwiscedu",
-    "title": "Women’s Tennis: UW vs. Iowa",
-    "type": "Game",
-    "sport": "Tennis",
-    "date": "2026-04-19",
-    "time": "8:00 AM",
-    "venue": "Nielsen Tennis Stadium",
-    "notes": "",
-    "source": "UW Athletics"
-  },
-  {
     "id": "uw-220761calendarwiscedu",
     "title": "Softball: UW vs. Rutgers",
     "type": "Game",
